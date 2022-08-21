@@ -1,0 +1,33 @@
+version: "3.8"
+services:
+
+  authentication-service:
+    image: authentication-service:compose_build
+    restart: on-failure
+    build:
+      context: ./authService
+      dockerfile: Dockerfile
+    networks:
+      - backend
+    environment:
+      PORT: ${AUTHENTICATION_SERVICE_PORT}
+      PSQL_USER: ${PSQL_USER}
+      PSQL_PASS: ${PSQL_PASS}
+      PSQL_DBNAME: ${PSQL_DBNAME}
+      PSQL_PORT: ${PSQL_PORT}
+
+
+  auth_baza:
+    image: postgres
+    restart: on-failure
+    environment:
+      PSQL_USER: ${PSQL_USER}
+      PSQL_PASS: ${PSQL_PASS}
+      PSQL_DBNAME: ${PSQL_DBNAME}
+      PSQL_PORT: ${PSQL_PORT}
+    ports:
+      - 5432:5432
+#    volumes:
+#     - ./postgre-volumes:/data/db
+    networks:
+      - backend
