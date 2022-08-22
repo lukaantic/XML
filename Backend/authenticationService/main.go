@@ -1,65 +1,91 @@
 package main
 
 import (
-	"authenticationService/handler"
-	"authenticationService/model"
-	"authenticationService/repository"
-	"authenticationService/service"
 	"fmt"
 	"log"
 	"net/http"
-
 	"github.com/gorilla/mux"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	"distlinkt.bab/backend/auth/handler"
+	"distlinkt.bab/backend/auth/model"
+	"distlinkt.bab/backend/auth/repository"
+	"distlinkt.bab/backend/auth/services"
+	"gorm.io/driver/postgres"
 )
 
-func initAuthRepository(database *gorm.DB) *repository.AuthRepository {
-	return &repository.AuthRepository{Database: database}
-}
-
-func initAuthService(repository *repository.AuthRepository) *service.AuthService {
-	return &service.AuthService{AuthRepository: repository}
-}
-
-func initAuthHandler(service *service.AuthService) *handler.AuthHandler {
-	return &handler.AuthHandler{AuthService: service}
-}
-
-func initDatabase() *gorm.DB {
-	var database *gorm.DB
-	//err := godotenv.Load()
-
-	dsn := fmt.Sprintf("host=localhost user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Kolkata",
-		"postgres", "admin", "auth-service", "5432")
-	log.Print("Connecting to PostgreSQL DB...")
-	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Otvorio sam bazu")
-	database.AutoMigrate(&model.User{})
-
-	return database
-}
-func handleFunc(handler *handler.AuthHandler) {
-
-	router := mux.NewRouter().StrictSlash(true)
-
-	router.HandleFunc("/", handler.RegisterUser).Methods("POST")
-
-	http.ListenAndServe(":3344", router)
-}
+const (
+	host     = "auth_baza"
+	//host     = "localhost"
+	port     = 5432
+	user     = "postgres"
+	password = "postgres"
+	dbname   = "korisnici"
+  )
 
 func main() {
 
-	database := initDatabase()
-	rep := initAuthRepository(database)
-	ser := initAuthService(rep)
-	hen := initAuthHandler(ser)
+	baza := initBaza()
+	repo := initRepo(baza)
+	serv := initServis(repo)
+	hend := initHandler(serv)
 
-	handleFunc(hen)
+	fmt.Println("Proba")
+
+	handlerFunkcija(hend)
+
+
+}
+
+func initBaza() *gorm.DB {
+
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",host, port, user, password, dbname)
+
+	fmt.Println(dsn)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err!= nil{
+		log.Fatal(err)
+	}
+
+	db.AutoMigrate(&model.User{})
+	
+	
+	useri:= []model.User{
+		{Uloga: "admin", Ime: "Milovan",Prezime: "Antic",Lozinka: "2109",Username: "bebi",Email: "bebizr@gmail.com"},
+		{Uloga: "admin", Ime: "Luka", Prezime: "Antic",Lozinka: "2810",Username: "luka", Email: "lukalazy@gmail.com"},
+	}
+
+	for _, user := range useri {
+		db.Create(&user)
+	}
+	return db
+}
+
+func initRepo(database *gorm.DB) *repository.AuthRepository {
+	return &repository.AuthRepository{Database: database}
+}
+
+func initServis(repository *repository.AuthRepository) *service.AuthService{
+	return &service.AuthService{AuthRepository: repository}
+}
+
+func initHandler(service *service.AuthService) *handler.AuthHandler{
+	return &handler.AuthHandler{Handler: service }
+}
+
+func handlerFunkcija (handler *handler.AuthHandler){
+
+	ruter := mux.NewRouter().StrictSlash(true)
+
+	ruter.HandleFunc("/register",handler.RegisterUser).Methods("POST")
+	// za update je potrebno da polje 'username' bude popunjeno
+	ruter.HandleFunc("/update",handler.UpdateUser).Methods("POST")
+	// za delete je potreban 'id'
+	ruter.HandleFunc("/delete",handler.DeleteUser).Methods("POST")
+	// za login treba 'username' i 'lozinka'
+	ruter.HandleFunc("/login",handler.Login).Methods("POST")	
+	fmt.Println("sad cu da slusam")
+
+	http.ListenAndServe(":2109",ruter)
+
 }
