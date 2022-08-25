@@ -51,8 +51,8 @@ func initBaza() *gorm.DB {
 	
 	
 	useri:= []model.User{
-		{Uloga: "admin", Ime: "Milovan",Prezime: "Antic",Lozinka: "2109",Username: "bebi",Email: "bebizr@gmail.com"},
 		{Uloga: "admin", Ime: "Luka", Prezime: "Antic",Lozinka: "2810",Username: "luka", Email: "lukalazy@gmail.com"},
+		{Uloga: "admin", Ime: "Milovan",Prezime: "Antic",Lozinka: "2109",Username: "bebi",Email: "bebizr@gmail.com"},	
 	}
 
 	for _, user := range useri {
@@ -86,6 +86,6 @@ func handlerFunkcija (handler *handler.AuthHandler){
 	ruter.HandleFunc("/login",handler.Login).Methods("POST")	
 	fmt.Println("sad cu da slusam")
 
-	http.ListenAndServe(":2109",ruter)
+	http.ListenAndServe(":8081",ruter)
 
 }

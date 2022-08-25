@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const secret = "nistagram_secret"
+const secret = "dislinkt_secret_tajna"
 
 type TokenClaims struct {
 	UserId string 		`json:"userId"`
@@ -30,7 +30,7 @@ func CreateJWT(userId string, role *model.UserRole, username string) (string, er
 	tokenString, err := token.SignedString([]byte(secret))
 
 	if err != nil {
-		fmt.Errorf("Something went wrong: %s", err.Error())
+		fmt.Errorf("Nesto ide naopako %s", err.Error())
 		return "", err
 	}
 

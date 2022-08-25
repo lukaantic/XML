@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"distlinkt.bab/backend/auth/utils"
 	"distlinkt.bab/backend/auth/model"
+	"distlinkt.bab/backend/auth/modelDTO"
 	service "distlinkt.bab/backend/auth/services"
 
 )
@@ -15,6 +16,7 @@ type AuthHandler struct {
 }
 
 func (handler *AuthHandler) RegisterUser(w http.ResponseWriter, req *http.Request) {
+	
 	var korisnik model.User
 	err := json.NewDecoder(req.Body).Decode(&korisnik)
 	if err != nil {
@@ -51,15 +53,14 @@ func (handler *AuthHandler) UpdateUser(w http.ResponseWriter, req *http.Request)
 }
 
 func (handler *AuthHandler) DeleteUser(w http.ResponseWriter, req *http.Request) {
-	var korisnik model.User
+	var korisnik modelDTO.DeleteUser
 	err := json.NewDecoder(req.Body).Decode(&korisnik)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	
-	ajdi := korisnik.ID.String()
-	err = handler.Handler.DeleteUser(ajdi)
+
+	err = handler.Handler.DeleteUser(korisnik.ID)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -70,6 +71,7 @@ func (handler *AuthHandler) DeleteUser(w http.ResponseWriter, req *http.Request)
 }
 
 func (handler *AuthHandler) Login(w http.ResponseWriter, req *http.Request) {
+	
 	var logKorisnik model.User
 	err := json.NewDecoder(req.Body).Decode(&logKorisnik)
 	if err != nil {
@@ -90,7 +92,7 @@ func (handler *AuthHandler) Login(w http.ResponseWriter, req *http.Request) {
 	}
 	ajdi := logKorisnik.ID.String()
 	token, err := util.CreateJWT(ajdi, &user.UserRole, user.Username)
-	response := model.LoginResponse{
+	response := modelDTO.LoginResponse{
 		Token: token,
 	}
 	responseJSON, err := json.Marshal(response)
