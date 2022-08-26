@@ -1,11 +1,10 @@
 package handler
 
 import (
-	"userService/service"
+	"encoding/json"
 	"net/http"
 	"userService/dto"
-	"encoding/json"
-	
+	"userService/service"
 )
 
 type RegularUserHandler struct {
@@ -30,4 +29,5 @@ func (handler *RegularUserHandler) Register(w http.ResponseWriter, r *http.Reque
 	} else {
 		w.WriteHeader(http.StatusCreated)
 	}
+
 }
