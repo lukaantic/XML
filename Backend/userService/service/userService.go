@@ -9,6 +9,8 @@ import (
 	//"os"
 	"bytes"
 	"encoding/json"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
 )
 
 
@@ -33,6 +35,23 @@ func (service *RegularUserService) Register(regularUserRegistrationDto dto.Regul
 		return err2
 	}
 	return nil
+}
+
+
+func createRegularUserFromRegularUserUpdateDTO(userUpdateDto *dto.RegularUserUpdateDTO) *model.RegularUser{
+	id, _ := primitive.ObjectIDFromHex(userUpdateDto.Id)
+	var regularUser model.RegularUser
+	regularUser.Id = id
+	regularUser.Name = userUpdateDto.Name
+	regularUser.Surname = userUpdateDto.Surname
+	regularUser.Username = userUpdateDto.Username
+	regularUser.Email = userUpdateDto.Email
+	regularUser.PhoneNumber = userUpdateDto.PhoneNumber
+	regularUser.Gender= userUpdateDto.Gender
+	regularUser.BirthDate = userUpdateDto.BirthDate
+	regularUser.Biography = userUpdateDto.Biography
+
+	return &regularUser
 }
 
 func createRegularUserFromRegularUserRegistrationDTO(regularUserDto *dto.RegularUserRegistrationDTO) *model.RegularUser{
@@ -66,6 +85,72 @@ func (service *RegularUserService) registerUserInAuthenticationService(regularUs
 		"surname":  regularUserRegistrationDto.Surname,
 	})
 	requestUrl := "http://localhost:8080/register"
+	resp, err := http.Post(requestUrl, "application/json", bytes.NewBuffer(postBody))
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	fmt.Println(resp.StatusCode)
+	return nil
+}
+
+func (service *RegularUserService) UpdatePersonalInformations(regularUserUpdateDto dto.RegularUserUpdateDTO) error {
+	fmt.Println("Updating regular user")
+
+	if service.RegularUserRepository.ExistByUsername(regularUserUpdateDto.Username) {
+		id, _ := primitive.ObjectIDFromHex(regularUserUpdateDto.Id)
+		if service.RegularUserRepository.UsernameChanged(regularUserUpdateDto.Username, id) {
+			return fmt.Errorf("username is already taken")
+		}
+	}
+	id := regularUserUpdateDto.Id
+	var regularUser = createRegularUserFromRegularUserUpdateDTO(&regularUserUpdateDto)
+	err := service.RegularUserRepository.UpdatePersonalInformations(regularUser)
+	if err != nil {
+		return err
+	}
+	err2 := service.updateUserInAuthenticationService(regularUserUpdateDto, id)
+	if err2 != nil {
+		return err2
+	}
+	return nil
+}
+
+func (service *RegularUserService) updateUserInAuthenticationService(regularUserUpdateDto dto.RegularUserUpdateDTO, createdUserId string) error {
+	postBody, _ := json.Marshal(map[string]string{
+		"_id": 		createdUserId,
+		"email":    regularUserUpdateDto.Email,
+		"username": regularUserUpdateDto.Username,
+		"name":     regularUserUpdateDto.Name,
+		"surname":  regularUserUpdateDto.Surname,
+	})
+	requestUrl := "http://localhost:8080/update"
+	resp, err := http.Post(requestUrl, "application/json", bytes.NewBuffer(postBody))
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	fmt.Println(resp.StatusCode)
+	return nil
+}
+
+func (service *RegularUserService) DeleteRegularUser(deleteUserDto dto.DeleteUserDTO) error{
+	id, err := primitive.ObjectIDFromHex(deleteUserDto.Id)
+	if err != nil {
+		return err
+	}
+	err1 := service.RegularUserRepository.DeleteRegularUser(id)
+	if err1 != nil {
+		return err1
+	}
+	return nil
+}
+
+func (service *RegularUserService) deleteUserInAuthenticationService(id string) error {
+	postBody, _ := json.Marshal(map[string]string{
+		"userId":   id,
+	})
+	requestUrl := "http://localhost:8080/delete"
 	resp, err := http.Post(requestUrl, "application/json", bytes.NewBuffer(postBody))
 	if err != nil {
 		fmt.Println(err)

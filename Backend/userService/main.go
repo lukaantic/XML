@@ -48,9 +48,11 @@ func handleFunc(userHandler *handler.RegularUserHandler) {
 
 	ruter := mux.NewRouter().StrictSlash(true)
 	ruter.HandleFunc("/register", userHandler.Register).Methods("POST")
+	ruter.HandleFunc("/update", userHandler.UpdatePersonalInformations).Methods("PUT")
+	ruter.HandleFunc("/delete", userHandler.DeleteRegularUser).Methods("DELETE")
 	
 
-	http.ListenAndServe(":8080", ruter)
+	http.ListenAndServe(":1231", ruter)
 }
 
 func main() {

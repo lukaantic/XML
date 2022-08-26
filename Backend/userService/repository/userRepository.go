@@ -39,3 +39,67 @@ func (repository *RegularUserRepository) ExistByUsername(username string) bool{
 	}
 	return false
 }
+
+
+func (repository *RegularUserRepository) DeleteRegularUser(id primitive.ObjectID) error{
+
+	regularUserCollection := repository.Database.Collection("regularUsers")
+	_, err := regularUserCollection.DeleteOne(context.TODO(), bson.M{"_id": id})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repository *RegularUserRepository) UpdatePersonalInformations(user *model.RegularUser) error{
+	regularUserCollection := repository.Database.Collection("regularUsers")
+
+	updatedRegularUser, err := regularUserCollection.UpdateOne(context.TODO(), bson.M{"_id": user.Id},
+		bson.D{
+			{"$set", bson.D{{"name", user.Name}}},
+			{"$set", bson.D{{"surname", user.Surname}}},
+			{"$set", bson.D{{"username", user.Username}}},
+			{"$set", bson.D{{"email", user.Email}}},
+			{"$set", bson.D{{"phoneNumber", user.PhoneNumber}}},
+			{"$set", bson.D{{"gender", user.Gender}}},
+			{"$set", bson.D{{"birthDate", user.BirthDate}}},
+			{"$set", bson.D{{"biography", user.Biography}}},
+			{"$set", bson.D{{"likedPosts", user.LikedPosts}}},
+			{"$set", bson.D{{"dislikedPosts", user.DislikedPosts}}},
+		})
+	if err != nil {
+		log.Fatal(err)
+		return err
+	} else if updatedRegularUser.MatchedCount == 0 {
+		return fmt.Errorf("user does not exist")
+	}
+	return nil
+}
+
+func (repository *RegularUserRepository) UsernameChanged(username string, id primitive.ObjectID) bool{
+	regularUserCollection := repository.Database.Collection("regularUsers")
+	filterCursor, err := regularUserCollection.Find(context.TODO(), bson.M{"_id": id, "username": username})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var userFiltered bson.D
+	if err = filterCursor.All(context.TODO(), &userFiltered); err != nil {
+		log.Fatal(err)
+	}
+	if len(userFiltered) == 0 {
+		return true
+	}
+	return false
+}
+
+func (repository *RegularUserRepository) FindUserById(userId primitive.ObjectID) (*model.RegularUser, error){
+	var regularUser *model.RegularUser
+	result:= repository.Database.Collection("regularUsers").FindOne(context.Background(), bson.M{"_id": userId})
+	result.Decode(&regularUser)
+
+	if regularUser == nil {
+		return nil, fmt.Errorf("regular user is NOT found")
+	}
+	return regularUser, nil
+}
