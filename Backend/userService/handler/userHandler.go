@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"userService/dto"
 	"userService/service"
+
+	"github.com/gorilla/mux"
 )
 
 type RegularUserHandler struct {
@@ -66,4 +68,44 @@ func (handler *RegularUserHandler) DeleteRegularUser(w http.ResponseWriter, r *h
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+}
+
+func (handler *RegularUserHandler) UpdateProfilePrivacy(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var profilePrivacyDto dto.ProfilePrivacyDTO
+	err := json.NewDecoder(r.Body).Decode(&profilePrivacyDto)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	err = handler.RegularUserService.UpdateProfilePrivacy(profilePrivacyDto)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
+}
+func (handler *RegularUserHandler) FindRegularUserByUsername(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	param := mux.Vars(r)
+	username := param["username"]
+	regularUserPostDto, err := handler.RegularUserService.FindRegularUserByUsername(username)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(regularUserPostDto)
+}
+
+func (handler *RegularUserHandler) GetAllPublicRegularUsers(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("content-type", "application/json")
+	allRegularUsersDto, err := handler.RegularUserService.GetAllPublicRegularUsers()
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	} else {
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(allRegularUsersDto)
+	}
 }

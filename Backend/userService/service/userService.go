@@ -1,18 +1,20 @@
 package service
 
 import (
-	"userService/repository"
 	"fmt"
+	"net/http"
 	"userService/dto"
 	"userService/model"
-	"net/http"
+	"userService/repository"
+
+	"go.mongodb.org/mongo-driver/bson"
+
 	//"os"
 	"bytes"
 	"encoding/json"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
-
 )
-
 
 type RegularUserService struct {
 	RegularUserRepository *repository.RegularUserRepository
@@ -37,8 +39,7 @@ func (service *RegularUserService) Register(regularUserRegistrationDto dto.Regul
 	return nil
 }
 
-
-func createRegularUserFromRegularUserUpdateDTO(userUpdateDto *dto.RegularUserUpdateDTO) *model.RegularUser{
+func createRegularUserFromRegularUserUpdateDTO(userUpdateDto *dto.RegularUserUpdateDTO) *model.RegularUser {
 	id, _ := primitive.ObjectIDFromHex(userUpdateDto.Id)
 	var regularUser model.RegularUser
 	regularUser.Id = id
@@ -47,16 +48,16 @@ func createRegularUserFromRegularUserUpdateDTO(userUpdateDto *dto.RegularUserUpd
 	regularUser.Username = userUpdateDto.Username
 	regularUser.Email = userUpdateDto.Email
 	regularUser.PhoneNumber = userUpdateDto.PhoneNumber
-	regularUser.Gender= userUpdateDto.Gender
+	regularUser.Gender = userUpdateDto.Gender
 	regularUser.BirthDate = userUpdateDto.BirthDate
 	regularUser.Biography = userUpdateDto.Biography
 
 	return &regularUser
 }
 
-func createRegularUserFromRegularUserRegistrationDTO(regularUserDto *dto.RegularUserRegistrationDTO) *model.RegularUser{
+func createRegularUserFromRegularUserRegistrationDTO(regularUserDto *dto.RegularUserRegistrationDTO) *model.RegularUser {
 	profilePrivacy := model.ProfilePrivacy{
-		PrivacyType: model.PrivacyType(0),
+		PrivacyType:        model.PrivacyType(0),
 		AllMessageRequests: true,
 	}
 	var regularUser model.RegularUser
@@ -84,7 +85,7 @@ func (service *RegularUserService) registerUserInAuthenticationService(regularUs
 		"name":     regularUserRegistrationDto.Name,
 		"surname":  regularUserRegistrationDto.Surname,
 	})
-	requestUrl := "http://localhost:8080/register"
+	requestUrl := "http://localhost:1231/register"
 	resp, err := http.Post(requestUrl, "application/json", bytes.NewBuffer(postBody))
 	if err != nil {
 		fmt.Println(err)
@@ -118,13 +119,13 @@ func (service *RegularUserService) UpdatePersonalInformations(regularUserUpdateD
 
 func (service *RegularUserService) updateUserInAuthenticationService(regularUserUpdateDto dto.RegularUserUpdateDTO, createdUserId string) error {
 	postBody, _ := json.Marshal(map[string]string{
-		"_id": 		createdUserId,
+		"_id":      createdUserId,
 		"email":    regularUserUpdateDto.Email,
 		"username": regularUserUpdateDto.Username,
 		"name":     regularUserUpdateDto.Name,
 		"surname":  regularUserUpdateDto.Surname,
 	})
-	requestUrl := "http://localhost:8080/update"
+	requestUrl := "http://localhost:1231/update"
 	resp, err := http.Post(requestUrl, "application/json", bytes.NewBuffer(postBody))
 	if err != nil {
 		fmt.Println(err)
@@ -134,7 +135,7 @@ func (service *RegularUserService) updateUserInAuthenticationService(regularUser
 	return nil
 }
 
-func (service *RegularUserService) DeleteRegularUser(deleteUserDto dto.DeleteUserDTO) error{
+func (service *RegularUserService) DeleteRegularUser(deleteUserDto dto.DeleteUserDTO) error {
 	id, err := primitive.ObjectIDFromHex(deleteUserDto.Id)
 	if err != nil {
 		return err
@@ -148,9 +149,9 @@ func (service *RegularUserService) DeleteRegularUser(deleteUserDto dto.DeleteUse
 
 func (service *RegularUserService) deleteUserInAuthenticationService(id string) error {
 	postBody, _ := json.Marshal(map[string]string{
-		"userId":   id,
+		"userId": id,
 	})
-	requestUrl := "http://localhost:8080/delete"
+	requestUrl := "http://localhost:1231/delete"
 	resp, err := http.Post(requestUrl, "application/json", bytes.NewBuffer(postBody))
 	if err != nil {
 		fmt.Println(err)
@@ -158,4 +159,82 @@ func (service *RegularUserService) deleteUserInAuthenticationService(id string) 
 	}
 	fmt.Println(resp.StatusCode)
 	return nil
+}
+func (service *RegularUserService) UpdateProfilePrivacy(profilePrivacyDto dto.ProfilePrivacyDTO) error {
+	fmt.Println("Updating regular user")
+
+	var regularUser = createRegularUserFromProfilePrivacyDTO(&profilePrivacyDto)
+	err := service.RegularUserRepository.UpdateProfilePrivacy(regularUser)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func createRegularUserFromProfilePrivacyDTO(profilePrivacyDto *dto.ProfilePrivacyDTO) *model.RegularUser {
+	id, _ := primitive.ObjectIDFromHex(profilePrivacyDto.Id)
+	var regularUser model.RegularUser
+	regularUser.Id = id
+	regularUser.ProfilePrivacy.PrivacyType = profilePrivacyDto.PrivacyType
+	regularUser.ProfilePrivacy.AllMessageRequests = profilePrivacyDto.AllMessagesRequests
+	return &regularUser
+}
+
+func (service *RegularUserService) FindRegularUserByUsername(username string) (*dto.RegularUserProfileDataDTO, error) {
+	regularUser, err := service.RegularUserRepository.FindUserByUsername(username)
+	if err != nil {
+		return nil, err
+	}
+	regularUserPostDto := createRegularUserProfileDataDto(regularUser)
+	return regularUserPostDto, nil
+}
+
+func createRegularUserProfileDataDto(regularUser *model.RegularUser) *dto.RegularUserProfileDataDTO {
+	var regularUserProfileDataDto dto.RegularUserProfileDataDTO
+
+	regularUserProfileDataDto.Id = regularUser.Id
+	regularUserProfileDataDto.Name = regularUser.Name
+	regularUserProfileDataDto.Surname = regularUser.Surname
+	regularUserProfileDataDto.Username = regularUser.Username
+	regularUserProfileDataDto.Biography = regularUser.Biography
+	regularUserProfileDataDto.ProfilePrivacy = regularUser.ProfilePrivacy
+
+	return &regularUserProfileDataDto
+}
+
+func (service *RegularUserService) GetAllPublicRegularUsers() ([]dto.RegularUserDTO, error) {
+	allRegularUsers, err := service.RegularUserRepository.GetAllPublicRegularUsers()
+	if err != nil {
+		return nil, err
+	}
+
+	allRegularUsersModel := CreateUserFromDocuments(allRegularUsers)
+
+	allRegularUsersDto := createRegularUserDtoFromRegularUser(allRegularUsersModel)
+	return allRegularUsersDto, nil
+}
+
+func CreateUserFromDocuments(UserDocuments []bson.D) []model.RegularUser {
+	var users []model.RegularUser
+	for i := 0; i < len(UserDocuments); i++ {
+		var user model.RegularUser
+		bsonBytes, _ := bson.Marshal(UserDocuments[i])
+		_ = bson.Unmarshal(bsonBytes, &user)
+		users = append(users, user)
+	}
+	return users
+}
+
+func createRegularUserDtoFromRegularUser(allRegularUsers []model.RegularUser) []dto.RegularUserDTO {
+
+	var regularUser []dto.RegularUserDTO
+	for i := 0; i < len(allRegularUsers); i++ {
+		var regularUserIteration dto.RegularUserDTO
+		regularUserIteration.Id = allRegularUsers[i].Id
+		regularUserIteration.Username = allRegularUsers[i].Username
+		regularUserIteration.Name = allRegularUsers[i].Name
+		regularUserIteration.Surname = allRegularUsers[i].Surname
+		regularUser = append(regularUser, regularUserIteration)
+	}
+	return regularUser
 }

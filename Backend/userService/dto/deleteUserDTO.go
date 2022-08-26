@@ -1,5 +1,5 @@
 package dto
 
 type DeleteUserDTO struct {
-	Id string `json:"userId"`
+	Id string `json:"_id"`
 }

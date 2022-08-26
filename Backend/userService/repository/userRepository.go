@@ -1,20 +1,21 @@
 package repository
 
 import (
-	"go.mongodb.org/mongo-driver/mongo"
 	"context"
 	"fmt"
 	"log"
-	"go.mongodb.org/mongo-driver/bson"
 	"userService/model"
+
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type RegularUserRepository struct {
 	Database *mongo.Database
 }
 
-func (repository *RegularUserRepository) Register(user *model.RegularUser) (string, error){
+func (repository *RegularUserRepository) Register(user *model.RegularUser) (string, error) {
 	regularUserCollection := repository.Database.Collection("regularUsers")
 	res, err := regularUserCollection.InsertOne(context.TODO(), &user)
 	if err != nil {
@@ -23,7 +24,7 @@ func (repository *RegularUserRepository) Register(user *model.RegularUser) (stri
 	return res.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
-func (repository *RegularUserRepository) ExistByUsername(username string) bool{
+func (repository *RegularUserRepository) ExistByUsername(username string) bool {
 	regularUserCollection := repository.Database.Collection("regularUsers")
 	filterCursor, err := regularUserCollection.Find(context.TODO(), bson.M{"username": username})
 	if err != nil {
@@ -40,8 +41,7 @@ func (repository *RegularUserRepository) ExistByUsername(username string) bool{
 	return false
 }
 
-
-func (repository *RegularUserRepository) DeleteRegularUser(id primitive.ObjectID) error{
+func (repository *RegularUserRepository) DeleteRegularUser(id primitive.ObjectID) error {
 
 	regularUserCollection := repository.Database.Collection("regularUsers")
 	_, err := regularUserCollection.DeleteOne(context.TODO(), bson.M{"_id": id})
@@ -51,7 +51,7 @@ func (repository *RegularUserRepository) DeleteRegularUser(id primitive.ObjectID
 	return nil
 }
 
-func (repository *RegularUserRepository) UpdatePersonalInformations(user *model.RegularUser) error{
+func (repository *RegularUserRepository) UpdatePersonalInformations(user *model.RegularUser) error {
 	regularUserCollection := repository.Database.Collection("regularUsers")
 
 	updatedRegularUser, err := regularUserCollection.UpdateOne(context.TODO(), bson.M{"_id": user.Id},
@@ -76,7 +76,7 @@ func (repository *RegularUserRepository) UpdatePersonalInformations(user *model.
 	return nil
 }
 
-func (repository *RegularUserRepository) UsernameChanged(username string, id primitive.ObjectID) bool{
+func (repository *RegularUserRepository) UsernameChanged(username string, id primitive.ObjectID) bool {
 	regularUserCollection := repository.Database.Collection("regularUsers")
 	filterCursor, err := regularUserCollection.Find(context.TODO(), bson.M{"_id": id, "username": username})
 	if err != nil {
@@ -93,13 +93,56 @@ func (repository *RegularUserRepository) UsernameChanged(username string, id pri
 	return false
 }
 
-func (repository *RegularUserRepository) FindUserById(userId primitive.ObjectID) (*model.RegularUser, error){
+func (repository *RegularUserRepository) FindUserById(userId primitive.ObjectID) (*model.RegularUser, error) {
 	var regularUser *model.RegularUser
-	result:= repository.Database.Collection("regularUsers").FindOne(context.Background(), bson.M{"_id": userId})
+	result := repository.Database.Collection("regularUsers").FindOne(context.Background(), bson.M{"_id": userId})
 	result.Decode(&regularUser)
 
 	if regularUser == nil {
 		return nil, fmt.Errorf("regular user is NOT found")
 	}
 	return regularUser, nil
+}
+
+func (repository *RegularUserRepository) UpdateProfilePrivacy(user *model.RegularUser) error {
+	regularUserCollection := repository.Database.Collection("regularUsers")
+
+	updatedRegularUser, err := regularUserCollection.UpdateOne(context.TODO(), bson.M{"_id": user.Id},
+		bson.D{
+			{"$set", bson.D{{"privacyType", user.ProfilePrivacy.PrivacyType}}},
+			{"$set", bson.D{{"allMessageRequests", user.ProfilePrivacy.AllMessageRequests}}},
+		})
+	if err != nil {
+		log.Fatal(err)
+		return err
+	} else if updatedRegularUser.MatchedCount == 0 {
+		return fmt.Errorf("user does not exist")
+	}
+	return nil
+}
+
+func (repository *RegularUserRepository) FindUserByUsername(username string) (*model.RegularUser, error) {
+	var regularUser *model.RegularUser
+	result := repository.Database.Collection("regularUsers").FindOne(context.Background(), bson.M{"username": username})
+	result.Decode(&regularUser)
+
+	if regularUser == nil {
+		return nil, fmt.Errorf("regular user is NOT found")
+	}
+	return regularUser, nil
+}
+
+func (repository *RegularUserRepository) GetAllPublicRegularUsers() ([]bson.D, error){
+
+	usersCollection := repository.Database.Collection("regularUsers")
+	filterCursor, err := usersCollection.Find(context.TODO(), bson.M{"privacyType": 0})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var postsFiltered []bson.D
+	if err = filterCursor.All(context.TODO(), &postsFiltered); err != nil {
+		log.Fatal(err)
+	}
+	return postsFiltered, nil
 }

@@ -50,7 +50,12 @@ func handleFunc(userHandler *handler.RegularUserHandler) {
 	ruter.HandleFunc("/register", userHandler.Register).Methods("POST")
 	ruter.HandleFunc("/update", userHandler.UpdatePersonalInformations).Methods("PUT")
 	ruter.HandleFunc("/delete", userHandler.DeleteRegularUser).Methods("DELETE")
-	
+	ruter.HandleFunc("/update-profile-privacy", userHandler.UpdateProfilePrivacy).Methods("PUT")
+	ruter.HandleFunc("/find-user/{username}", userHandler.FindRegularUserByUsername).Methods("GET")
+	ruter.HandleFunc("/public-regular-users", userHandler.GetAllPublicRegularUsers).Methods("GET")
+
+
+
 
 	http.ListenAndServe(":1231", ruter)
 }
