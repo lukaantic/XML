@@ -1,13 +1,14 @@
 package main
 
 import (
-	"fmt"
-	"userService/repository"
-	"userService/service"
-	"userService/handler"
 	"context"
+	"fmt"
 	"log"
 	"net/http"
+	"userService/handler"
+	"userService/repository"
+	"userService/service"
+
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -25,8 +26,8 @@ func initUserHandler(service *service.RegularUserService) *handler.RegularUserHa
 	return &handler.RegularUserHandler{RegularUserService: service}
 }
 
-func initDatabase() *mongo.Database{
-	
+func initDatabase() *mongo.Database {
+
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
@@ -46,9 +47,10 @@ func initDatabase() *mongo.Database{
 func handleFunc(userHandler *handler.RegularUserHandler) {
 
 	ruter := mux.NewRouter().StrictSlash(true)
+	ruter.HandleFunc("/register", userHandler.Register).Methods("POST")
 	
 
-	http.ListenAndServe(":1234",ruter)
+	http.ListenAndServe(":8080", ruter)
 }
 
 func main() {
