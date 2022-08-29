@@ -1,16 +1,17 @@
 package main
 
 import (
+	"authenticationService/handler"
+	"authenticationService/model"
+	"authenticationService/repository"
+	service "authenticationService/services"
 	"fmt"
 	"log"
 	"net/http"
+
 	"github.com/gorilla/mux"
-	"gorm.io/gorm"
-	"distlinkt.bab/backend/auth/handler"
-	"distlinkt.bab/backend/auth/model"
-	"distlinkt.bab/backend/auth/repository"
-	"distlinkt.bab/backend/auth/services"
 	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 const (
@@ -18,7 +19,7 @@ const (
 	//host     = "localhost"
 	port     = 5432
 	user     = "postgres"
-	password = "admin"
+	password = "postgres"
 	dbname   = "korisnici"
   )
 
@@ -51,8 +52,8 @@ func initBaza() *gorm.DB {
 	
 	
 	useri:= []model.User{
-		{Uloga: "admin", Ime: "Luka", Prezime: "Antic",Lozinka: "2810",Username: "luka", Email: "lukalazy@gmail.com"},
-		{Uloga: "admin", Ime: "Milovan",Prezime: "Antic",Lozinka: "2109",Username: "bebi",Email: "bebizr@gmail.com"},	
+		{UserRole: 3, Name: "Luka", Surname: "Antic",Password: "2810",Username: "luka"},
+		{UserRole: 3, Name: "Vladan",Surname: "Lalic",Password: "2302",Username: "lala"},	
 	}
 
 	for _, user := range useri {
