@@ -1,7 +1,6 @@
 package service
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,7 +10,6 @@ import (
 	"postService/repository"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type PostService struct {
@@ -23,11 +21,13 @@ func (service *PostService) CreateNewPost(postUploadDto dto.PostUploadDTO) error
 
 	post, err := createPostFromPostUploadDTO(&postUploadDto)
 	if err != nil {
+		fmt.Println("ovde sam pao")
 		return err
 	}
 
 	_, err1 := service.PostRepository.Create(post)
 	if err1 != nil {
+		fmt.Println("ili ovde")
 		return err1
 	}
 
@@ -37,13 +37,13 @@ func (service *PostService) CreateNewPost(postUploadDto dto.PostUploadDTO) error
 func createPostFromPostUploadDTO(postUploadDto *dto.PostUploadDTO) (*model.Post, error) {
 	regularUser, err := getRegularUserFromUsername(postUploadDto.Username)
 	if err != nil {
+		fmt.Println("pokvario sam se tu")
 		return nil, err
 	}
 	var post model.Post
 	post.Description = postUploadDto.Description
 	post.MediaPaths = postUploadDto.MediaPaths
 	post.UploadDate = postUploadDto.UploadDate
-	post.Link = postUploadDto.Link
 	post.RegularUser = *regularUser
 	post.RegularUser.Username = postUploadDto.Username
 	post.Likes = 0
@@ -68,13 +68,6 @@ func getRegularUserFromUsername(username string) (*model.RegularUser, error) {
 	return &regularUser, nil
 }
 
-func (service *PostService) GetAllPublicPosts() []model.Post {
-	publicPostsDocuments := service.PostRepository.GetAllPublic()
-
-	publicPosts := CreatePostsFromDocuments(publicPostsDocuments)
-	return publicPosts
-}
-
 func (service *PostService) GetAllRegularUserPosts(username string) []model.Post {
 	regularUserPostDocuments := service.PostRepository.GetAllByUsername(username)
 
@@ -91,202 +84,4 @@ func CreatePostsFromDocuments(PostsDocuments []bson.D) []model.Post {
 		publicPosts = append(publicPosts, post)
 	}
 	return publicPosts
-}
-
-func (service *PostService) CommentPost(commentDTO dto.CommentDTO) error {
-	fmt.Println("Commenting post...")
-
-	comment, err := createCommentFromCommentDTO(&commentDTO)
-	if err != nil {
-		return err
-	}
-	postId, _ := primitive.ObjectIDFromHex(commentDTO.PostId)
-	post, err := service.PostRepository.FindPostById(postId)
-	if err != nil {
-		return err
-	}
-
-	appendedComments := append(post.Comment, *comment)
-	post.Comment = appendedComments
-	err = service.PostRepository.Update(post)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func createCommentFromCommentDTO(commentDTO *dto.CommentDTO) (*model.Comment, error) {
-	regularUser, err := getRegularUserFromUsername(commentDTO.Username)
-	if err != nil {
-		return nil, err
-	}
-	var comment model.Comment
-	comment.RegularUser = *regularUser
-	comment.RegularUser.Username = commentDTO.Username
-	comment.Text = commentDTO.Text
-
-	return &comment, nil
-}
-
-func contains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
-			return true
-		}
-	}
-	return false
-}
-
-func (service *PostService) LikePost(postLikeDTO dto.PostLikeDTO) error {
-	fmt.Println("Liking post...")
-
-	postId, _ := primitive.ObjectIDFromHex(postLikeDTO.PostId)
-	post, err := service.PostRepository.FindPostById(postId)
-	if err != nil {
-		return err
-	}
-	userLikedAndDisliked, err := getRegularUserLikedAndDislikedPostsByUsername(postLikeDTO.Username)
-	if err != nil {
-		return err
-	}
-
-	if !contains(userLikedAndDisliked.LikedPostsIds, postLikeDTO.PostId) && !contains(userLikedAndDisliked.DislikedPostsIds, postLikeDTO.PostId) {
-		post.Likes = post.Likes + 1
-		updateUserLikedPosts(postLikeDTO, "yes")
-
-		_, err := getRegularUserFromUsername(postLikeDTO.Username)
-		if err != nil {
-			return err
-		}
-	}
-	if !contains(userLikedAndDisliked.LikedPostsIds, postLikeDTO.PostId) && contains(userLikedAndDisliked.DislikedPostsIds, postLikeDTO.PostId) {
-		post.Dislikes = post.Dislikes - 1
-		post.Likes = post.Likes + 1
-		err := updateUserLikedPosts(postLikeDTO, "yes")
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		err = updateUserDislikedPosts(postLikeDTO, "no")
-		if err != nil {
-			fmt.Println(err)
-		}
-
-	}
-	if contains(userLikedAndDisliked.LikedPostsIds, postLikeDTO.PostId) {
-		post.Likes = post.Likes - 1
-		err := updateUserLikedPosts(postLikeDTO, "no")
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
-
-	err = service.PostRepository.Update(post)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func updateUserLikedPosts(postLikeDTO dto.PostLikeDTO, isAdd string) error {
-	postBody, _ := json.Marshal(map[string]string{
-		"username": postLikeDTO.Username,
-		"postId":   postLikeDTO.PostId,
-		"isAdd":    isAdd,
-	})
-	requestUrl := fmt.Sprintf("http://%s:%s/update-liked-posts", os.Getenv("USER_SERVICE_DOMAIN"), os.Getenv("USER_SERVICE_PORT"))
-	resp, err := http.Post(requestUrl, "application/json", bytes.NewBuffer(postBody))
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	fmt.Println(resp.StatusCode)
-	return nil
-}
-
-func getRegularUserLikedAndDislikedPostsByUsername(username string) (*dto.UserLikedAndDislikedDTO, error) {
-	requestUrl := fmt.Sprintf("http://%s:%s/liked-and-disliked/%s", os.Getenv("USER_SERVICE_DOMAIN"), os.Getenv("USER_SERVICE_PORT"), username)
-	resp, err := http.Get(requestUrl)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	var userLikesAndDislikes dto.UserLikedAndDislikedDTO
-	decoder := json.NewDecoder(resp.Body)
-	_ = decoder.Decode(&userLikesAndDislikes)
-
-	return &userLikesAndDislikes, nil
-}
-
-func updateUserDislikedPosts(postLikeDTO dto.PostLikeDTO, isAdd string) error {
-	postBody, _ := json.Marshal(map[string]string{
-		"username": postLikeDTO.Username,
-		"postId":   postLikeDTO.PostId,
-		"isAdd":    isAdd,
-	})
-	requestUrl := fmt.Sprintf("http://%s:%s/update-disliked-posts", os.Getenv("USER_SERVICE_DOMAIN"), os.Getenv("USER_SERVICE_PORT"))
-	resp, err := http.Post(requestUrl, "application/json", bytes.NewBuffer(postBody))
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	fmt.Println(resp.StatusCode)
-	return nil
-}
-
-func (service *PostService) DislikePost(postLikeDTO dto.PostLikeDTO) error {
-	fmt.Println("Disliking post...")
-
-	postId, _ := primitive.ObjectIDFromHex(postLikeDTO.PostId)
-	post, err := service.PostRepository.FindPostById(postId)
-	if err != nil {
-		return err
-	}
-	userLikedAndDisliked, err := getRegularUserLikedAndDislikedPostsByUsername(postLikeDTO.Username)
-	if err != nil {
-		return err
-	}
-
-	if !contains(userLikedAndDisliked.DislikedPostsIds, postLikeDTO.PostId) && !contains(userLikedAndDisliked.LikedPostsIds, postLikeDTO.PostId) {
-		post.Dislikes = post.Dislikes + 1
-		updateUserDislikedPosts(postLikeDTO, "yes")
-	}
-	if !contains(userLikedAndDisliked.DislikedPostsIds, postLikeDTO.PostId) && contains(userLikedAndDisliked.LikedPostsIds, postLikeDTO.PostId) {
-		post.Likes = post.Likes - 1
-		post.Dislikes = post.Dislikes + 1
-		err := updateUserDislikedPosts(postLikeDTO, "yes")
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		err = updateUserLikedPosts(postLikeDTO, "no")
-		if err != nil {
-			fmt.Println(err)
-		}
-
-	}
-	if contains(userLikedAndDisliked.DislikedPostsIds, postLikeDTO.PostId) {
-		post.Dislikes = post.Dislikes - 1
-		err := updateUserDislikedPosts(postLikeDTO, "no")
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
-
-	err = service.PostRepository.Update(post)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-
-func (service *PostService) DeletePost(id primitive.ObjectID) error {
-	err := service.PostRepository.DeletePost(id)
-	if err != nil {
-		return err
-	}
-	return nil
 }

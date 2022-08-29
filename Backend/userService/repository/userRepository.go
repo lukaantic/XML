@@ -132,7 +132,7 @@ func (repository *RegularUserRepository) FindUserByUsername(username string) (*m
 	return regularUser, nil
 }
 
-func (repository *RegularUserRepository) GetAllPublicRegularUsers() ([]bson.D, error) {
+func (repository *RegularUserRepository) GetAllPublicRegularUsers() ([]bson.D, error){
 
 	usersCollection := repository.Database.Collection("regularUsers")
 	filterCursor, err := usersCollection.Find(context.TODO(), bson.M{"privacyType": 0})
