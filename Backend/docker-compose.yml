@@ -6,7 +6,7 @@ services:
     image: nginx:1.19.8-alpine
     restart: on-failure
     ports:
-      - 8080:8080
+      - 8081:8081
     networks:
       - backend
     volumes:
@@ -18,14 +18,12 @@ services:
     restart: on-failure
     container_name: auth
     build:
-      context: ./auth
+      context: ./authenticationService
       dockerfile: Dockerfile
     networks:
       - backend
     environment:
-      - PORT=8081 
-#    ports:
-#      - 2109:2109     
+      - PORT=8081   
     depends_on:
       - auth_baza  
 
@@ -42,16 +40,43 @@ services:
     networks:
       - backend
 
-  user_baza:
-    image: mongo
+  user-service:
+    image: user-service:compose_build
     restart: on-failure
-    ports:
-      - 27017:27017
+    build:
+      context: ./userService
+      dockerfile: Dockerfile 
     networks:
       - backend
-     
+    environment:
+      PORT: ${USER_SERVICE_PORT}
+      AUTHENTICATION_SERVICE_DOMAIN: ${AUTHENTICATION_SERVICE_DOMAIN}
+      AUTHENTICATION_SERVICE_PORT: ${AUTHENTICATION_SERVICE_PORT}
+    depends_on:
+      - mongo-db
 
+  post-service:
+    image: post-service:compose_build
+    restart: on-failure
+    build:
+      context: ./postService
+      dockerfile: Dockerfile 
+    networks:
+      - backend
+    environment:
+      PORT: ${POST_SERVICE_PORT}
+      USER_SERVICE_DOMAIN: ${USER_SERVICE_DOMAIN}
+      USER_SERVICE_PORT: ${USER_SERVICE_PORT}
+    depends_on:
+      - mongo-db
 
+  mongo-db:
+    image: mongo
+    restart: on-failure
+#    ports:
+#      - 27017:27017
+    networks:
+      - backend
 
 networks:
   backend:

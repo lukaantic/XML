@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"userService/handler"
 	"userService/repository"
 	"userService/service"
@@ -28,7 +29,7 @@ func initUserHandler(service *service.RegularUserService) *handler.RegularUserHa
 
 func initDatabase() *mongo.Database {
 
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+	clientOptions := options.Client().ApplyURI("mongodb://mongo-db:27017")
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		log.Fatal(err)
@@ -52,17 +53,20 @@ func handleFunc(userHandler *handler.RegularUserHandler) {
 	ruter.HandleFunc("/delete", userHandler.DeleteRegularUser).Methods("DELETE")
 	ruter.HandleFunc("/update-profile-privacy", userHandler.UpdateProfilePrivacy).Methods("PUT")
 	ruter.HandleFunc("/find-user/{username}", userHandler.FindRegularUserByUsername).Methods("GET")
-	ruter.HandleFunc("/public-regular-users", userHandler.GetAllPublicRegularUsers).Methods("GET")
+	ruter.HandleFunc("/c", userHandler.GetAllPublicRegularUsers).Methods("GET")
+	ruter.HandleFunc("/by-username/{username}", userHandler.CreateRegularUserPostDTOByUsername).Methods("GET")
+	ruter.HandleFunc("/by-users-ids", userHandler.FindUsersByIds).Methods("POST")
+	//ruter.HandleFunc("/get-all-regular-users", userHandler.GetAllRegularUsers).Methods("GET")
 
-
-
-
-	http.ListenAndServe(":1231", ruter)
+	err := http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), ruter)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func main() {
 	userDatabase := initDatabase()
-
+	fmt.Println(os.Getenv("AUTHENTICATION_SERVICE_PORT"))
 	userRepository := initUserRepository(userDatabase)
 	userService := initUserService(userRepository)
 	userHandler := initUserHandler(userService)

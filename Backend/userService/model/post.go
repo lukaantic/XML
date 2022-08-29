@@ -1,7 +1,7 @@
 package model
 
 type Post struct {
-	RegularUser `json:"user"`
+	MediaContent
 	Likes    int `json:"likes"`
 	Dislikes int `json:"dislikes"`
 }

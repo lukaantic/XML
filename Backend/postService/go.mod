@@ -1,4 +1,4 @@
-module userService
+module postService
 
 go 1.18
 

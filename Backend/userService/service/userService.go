@@ -9,9 +9,9 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 
-	//"os"
 	"bytes"
 	"encoding/json"
+	"os"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -85,7 +85,8 @@ func (service *RegularUserService) registerUserInAuthenticationService(regularUs
 		"name":     regularUserRegistrationDto.Name,
 		"surname":  regularUserRegistrationDto.Surname,
 	})
-	requestUrl := "http://localhost:1231/register"
+	requestUrl := fmt.Sprintf("http://%s:%s/register", os.Getenv("AUTHENTICATION_SERVICE_DOMAIN"), os.Getenv("AUTHENTICATION_SERVICE_PORT"))
+
 	resp, err := http.Post(requestUrl, "application/json", bytes.NewBuffer(postBody))
 	if err != nil {
 		fmt.Println(err)
@@ -125,7 +126,7 @@ func (service *RegularUserService) updateUserInAuthenticationService(regularUser
 		"name":     regularUserUpdateDto.Name,
 		"surname":  regularUserUpdateDto.Surname,
 	})
-	requestUrl := "http://localhost:1231/update"
+	requestUrl := fmt.Sprintf("http://%s:%s/update", os.Getenv("AUTHENTICATION_SERVICE_DOMAIN"), os.Getenv("AUTHENTICATION_SERVICE_PORT"))
 	resp, err := http.Post(requestUrl, "application/json", bytes.NewBuffer(postBody))
 	if err != nil {
 		fmt.Println(err)
@@ -151,7 +152,7 @@ func (service *RegularUserService) deleteUserInAuthenticationService(id string) 
 	postBody, _ := json.Marshal(map[string]string{
 		"userId": id,
 	})
-	requestUrl := "http://localhost:1231/delete"
+	requestUrl := fmt.Sprintf("http://%s:%s/delete", os.Getenv("AUTHENTICATION_SERVICE_DOMAIN"), os.Getenv("AUTHENTICATION_SERVICE_PORT"))
 	resp, err := http.Post(requestUrl, "application/json", bytes.NewBuffer(postBody))
 	if err != nil {
 		fmt.Println(err)
@@ -237,4 +238,47 @@ func createRegularUserDtoFromRegularUser(allRegularUsers []model.RegularUser) []
 		regularUser = append(regularUser, regularUserIteration)
 	}
 	return regularUser
+}
+func (service *RegularUserService) CreateRegularUserPostDTOByUsername(username string) (*dto.RegularUserPostDTO, error) {
+	regularUser, err := service.RegularUserRepository.FindUserByUsername(username)
+	if err != nil {
+		return nil, err
+	}
+	regularUserPostDto := createRegularUserPostDTOFromRegularUser(regularUser)
+	return regularUserPostDto, nil
+}
+
+func createRegularUserPostDTOFromRegularUser(regularUser *model.RegularUser) *dto.RegularUserPostDTO {
+	var regularUserPostDto dto.RegularUserPostDTO
+	regularUserPostDto.Id = regularUser.Id.Hex()
+	regularUserPostDto.PrivacyType = &regularUser.ProfilePrivacy.PrivacyType
+
+	return &regularUserPostDto
+}
+
+func (service *RegularUserService) FindUsersByIds(usersIds []string) (*[]dto.UserFollowDTO, error) {
+	var users []model.RegularUser
+	for i := 0; i < len(usersIds); i++ {
+		id, _ := primitive.ObjectIDFromHex(usersIds[i])
+		regularUser, err := service.RegularUserRepository.FindUserById(id)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, *regularUser)
+	}
+
+	userFollowDTOs := createUserFollowDTOsFromRegularUsers(users)
+	return userFollowDTOs, nil
+}
+
+func createUserFollowDTOsFromRegularUsers(regularUsers []model.RegularUser) *[]dto.UserFollowDTO {
+	var userFollowDTOs []dto.UserFollowDTO
+	for i := 0; i < len(regularUsers); i++ {
+		var userFollowDto dto.UserFollowDTO
+		userFollowDto.Username = regularUsers[i].Username
+		userFollowDto.UserId = regularUsers[i].Id.Hex()
+		userFollowDTOs = append(userFollowDTOs, userFollowDto)
+	}
+
+	return &userFollowDTOs
 }

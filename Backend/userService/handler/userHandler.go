@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"userService/dto"
 	"userService/service"
@@ -98,7 +99,7 @@ func (handler *RegularUserHandler) FindRegularUserByUsername(w http.ResponseWrit
 	json.NewEncoder(w).Encode(regularUserPostDto)
 }
 
-func (handler *RegularUserHandler) GetAllPublicRegularUsers(w http.ResponseWriter, r *http.Request){
+func (handler *RegularUserHandler) GetAllPublicRegularUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 	allRegularUsersDto, err := handler.RegularUserService.GetAllPublicRegularUsers()
 
@@ -108,4 +109,34 @@ func (handler *RegularUserHandler) GetAllPublicRegularUsers(w http.ResponseWrite
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(allRegularUsersDto)
 	}
+}
+
+func (handler *RegularUserHandler) CreateRegularUserPostDTOByUsername(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	param := mux.Vars(r)
+	username := param["username"]
+	regularUserPostDto, err := handler.RegularUserService.CreateRegularUserPostDTOByUsername(username)
+	if err != nil {
+		fmt.Println("stigao sam ovde da padnem")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	json.NewEncoder(w).Encode(regularUserPostDto)
+}
+
+func (handler *RegularUserHandler) FindUsersByIds(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	var usersIds []string
+	err := json.NewDecoder(r.Body).Decode(&usersIds)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	userFollowDtos, err := handler.RegularUserService.FindUsersByIds(usersIds)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	json.NewEncoder(w).Encode(userFollowDtos)
 }
