@@ -5,6 +5,7 @@ import (
 )
 
 type PostUploadDTO struct {
+	Link        string              `json:"link"`
 	Description string              `json:"description"`
 	MediaPaths  []string            `json:"mediaPaths"`
 	UploadDate  *primitive.DateTime `json:"uploadDate"`
