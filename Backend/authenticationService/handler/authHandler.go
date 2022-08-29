@@ -1,14 +1,13 @@
 package handler
 
 import (
+	"authenticationService/model"
+	"authenticationService/modelDTO"
+	service "authenticationService/services"
+	util "authenticationService/utils"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"distlinkt.bab/backend/auth/utils"
-	"distlinkt.bab/backend/auth/model"
-	"distlinkt.bab/backend/auth/modelDTO"
-	service "distlinkt.bab/backend/auth/services"
-
 )
 
 type AuthHandler struct {
@@ -85,13 +84,13 @@ func (handler *AuthHandler) Login(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return		
 	}
-	if (user.Lozinka != logKorisnik.Lozinka){
+	if (user.Password != logKorisnik.Password){
 		fmt.Println("Pogresna lozinka")	
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	ajdi := logKorisnik.ID.String()
-	token, err := util.CreateJWT(ajdi, &user.UserRole, user.Username)
+	//ajdi := logKorisnik.ID.String()
+	token, err := util.CreateJWT(logKorisnik.ID, &user.UserRole, user.Username)
 	response := modelDTO.LoginResponse{
 		Token: token,
 	}

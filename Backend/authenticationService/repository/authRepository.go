@@ -1,8 +1,8 @@
 package repository
 
 import (
+	"authenticationService/model"
 	"fmt"
-	"distlinkt.bab/backend/auth/model"
 	"gorm.io/gorm"
 )
 
@@ -36,7 +36,7 @@ func (repo *AuthRepository) DeleteUser (id string) error {
 	}
 	return nil
 }
-
+/*
 func (repo *AuthRepository) FindUserByUserNameOld (username string) (*model.User, error){
 	korisnik := &model.User{}
 	err := repo.Database.Table("users").First(&korisnik, "username = ?", username).Error
@@ -46,6 +46,7 @@ func (repo *AuthRepository) FindUserByUserNameOld (username string) (*model.User
 	}
 	return korisnik, nil
 }
+*/
 
 func (repo *AuthRepository) FindUserByUsername(username string) (*model.User, error){
 	user := &model.User{}
