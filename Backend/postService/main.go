@@ -50,6 +50,11 @@ func handleFunc(handlerPost *handler.PostHandler) {
 	ruter := mux.NewRouter().StrictSlash(true)
 	ruter.HandleFunc("/new-post", handlerPost.CreateNewPost).Methods("POST")
 	ruter.HandleFunc("/regular-user-posts/{username}", handlerPost.GetAllRegularUserPosts).Methods("GET")
+	ruter.HandleFunc("/public", handlerPost.GetAllPublicPosts).Methods("GET")
+	ruter.HandleFunc("/comment-post", handlerPost.CommentPost).Methods("PUT")
+	ruter.HandleFunc("/like-post", handlerPost.LikePost).Methods("PUT")
+	ruter.HandleFunc("/dislike-post", handlerPost.DislikePost).Methods("PUT")
+	ruter.HandleFunc("/delete-post/{id}", handlerPost.DeletePost).Methods("DELETE")
 
 	err := http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), ruter)
 	if err != nil {
