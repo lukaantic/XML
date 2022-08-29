@@ -14,6 +14,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import ShareIcon from '@mui/icons-material/Share';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import UserPost from '../../components/post/UsersPost';
 
 const ExpandMore = styled((props) => {
   const { expand, ...other } = props;
@@ -35,50 +36,7 @@ export default function RecipeReviewCard() {
 
   return (
     <div style={{alignItems:"center"}}>
-        <Card sx={{ maxWidth: 345 }}>
-            <CardHeader
-                avatar={
-                <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-                    Dusan try 3
-                </Avatar>
-                }
-                action={
-                <IconButton aria-label="settings">
-                    <MoreVertIcon />
-                </IconButton>
-                }
-                title=""
-                // subheader="September 14, 2016"
-            />
-            <CardMedia
-                component="img"
-                height="194"
-                image="/static/images/cards/paella.jpg"
-                // alt="Paella dish"
-            />
-            <CardContent>
-            </CardContent>
-            <CardActions disableSpacing>
-                <IconButton aria-label="add to favorites">
-                <FavoriteIcon />
-                </IconButton>
-                <IconButton aria-label="share">
-                <ShareIcon />
-                </IconButton>
-                <ExpandMore
-                expand={expanded}
-                onClick={handleExpandClick}
-                aria-expanded={expanded}
-                aria-label="show more"
-                >
-                <ExpandMoreIcon />
-                </ExpandMore>
-            </CardActions>
-            <Collapse in={expanded} timeout="auto" unmountOnExit>
-                <CardContent>
-                </CardContent>
-            </Collapse>
-        </Card>
+        <UserPost />
     </div>
   );
 }
