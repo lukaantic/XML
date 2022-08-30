@@ -16,8 +16,5 @@ type User struct {
 	BirthDate      *primitive.DateTime `bson:"birthDate,omitempty"`
 	UserRole       UserRole            `bson:"userRole,omitempty"`
 	Biography      string              `bson:"biography,omitempty"`
-	Skills         string              `bson:"skills"`
-	Education      string              `bson:"education"`
-	Expirience     string              `bson:"expirience"`
-	Interests      string              `bson:"interests"`
+
 }

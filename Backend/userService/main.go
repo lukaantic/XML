@@ -56,11 +56,15 @@ func handleFunc(userHandler *handler.RegularUserHandler) {
 	ruter.HandleFunc("/delete", userHandler.DeleteRegularUser).Methods("DELETE")
 	ruter.HandleFunc("/update-profile-privacy", userHandler.UpdateProfilePrivacy).Methods("PUT")
 	ruter.HandleFunc("/find-user/{username}", userHandler.FindRegularUserByUsername).Methods("GET")
-	ruter.HandleFunc("/c", userHandler.GetAllPublicRegularUsers).Methods("GET")
-	ruter.HandleFunc("/by-users-ids", userHandler.FindUsersByIds).Methods("POST")
-	//ruter.HandleFunc("/get-all-regular-users", userHandler.GetAllRegularUsers).Methods("GET")
+	ruter.HandleFunc("/public-regular-users", userHandler.GetAllPublicRegularUsers).Methods("GET")
 
-	err := http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), ruter)
+	//err := http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), ruter)
+
+	connString := fmt.Sprintf(":%s", os.Getenv("USER_SERVICE_PORT"))
+
+	fmt.Println(connString)
+	err := http.ListenAndServe(connString, ruter)
+	//err := http.ListenAndServe(":8081", ruter)
 	if err != nil {
 		log.Println(err)
 	}
