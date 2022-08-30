@@ -15,6 +15,7 @@ import ShareIcon from '@mui/icons-material/Share';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import UserPost from '../../components/post/UsersPost';
+import Header from '../../components/navigation/Header';
 
 const ExpandMore = styled((props) => {
   const { expand, ...other } = props;
@@ -34,9 +35,14 @@ export default function RecipeReviewCard() {
     setExpanded(!expanded);
   };
 
+  const [isSliderOpen, setIsSliderOpen] = React.useState(false)
+
   return (
-    <div style={{alignItems:"center"}}>
+    <div>
+      <Header isOpen={isSliderOpen} onSliderOpen={() => setIsSliderOpen(true)} />
+      <div style={{ display: "flex", flex: 1, flexDirection: "column", alignItems: "center", width: "100%", margin: 50 }}>
         <UserPost />
+      </div>
     </div>
   );
 }
