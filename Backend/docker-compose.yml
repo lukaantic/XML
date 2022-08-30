@@ -70,6 +70,21 @@ services:
     depends_on:
       - mongo-db
 
+  job-service:
+    image: job-service:compose_build
+    restart: on-failure
+    build:
+      context: ./jobService
+      dockerfile: Dockerfile
+    environment:
+      PORT: ${JOB_SERVICE_PORT}
+      USER_SERVICE_DOMAIN: ${USER_SERVICE_DOMAIN}
+      USER_SERVICE_PORT: ${USER_SERVICE_PORT}
+    networks:
+      - backend
+    depends_on:
+      - mongo-db
+
   mongo-db:
     image: mongo
     restart: on-failure
