@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"net/http"
 	"userService/dto"
+	"userService/helper"
 	"userService/service"
 	"userService/tracer"
-	"userService/helper"
+
 	//"userService/poststore"
+	"context"
+
 	"github.com/gorilla/mux"
 	"github.com/opentracing/opentracing-go"
-	"context"
 )
 
 type RegularUserHandler struct {
@@ -20,10 +22,9 @@ type RegularUserHandler struct {
 
 func (handler *RegularUserHandler) Register(w http.ResponseWriter, r *http.Request) {
 
-	span := tracer.StartSpanFromRequest("Register Regular User",opentracing.GlobalTracer(), r)
+	span := tracer.StartSpanFromRequest("Register Regular User", opentracing.GlobalTracer(), r)
 	defer span.Finish()
 	ctx := tracer.ContextWithSpan(context.Background(), span)
-
 
 	w.Header().Set("Content-Type", "application/json")
 	var regularUserRegistrationDto dto.RegularUserRegistrationDTO
@@ -44,22 +45,21 @@ func (handler *RegularUserHandler) Register(w http.ResponseWriter, r *http.Reque
 	}
 
 	ctx = tracer.ContextWithSpan(context.Background(), span)
-	
+
 	_, err = helper.DecodeBody(ctx, r.Body)
 	if err != nil {
 		tracer.LogError(span, err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	
+
 }
 
 func (handler *RegularUserHandler) UpdatePersonalInformations(w http.ResponseWriter, r *http.Request) {
 
-	span := tracer.StartSpanFromRequest("Update Regular User",opentracing.GlobalTracer(), r)
+	span := tracer.StartSpanFromRequest("Update Regular User", opentracing.GlobalTracer(), r)
 	defer span.Finish()
 	ctx := tracer.ContextWithSpan(context.Background(), span)
-
 
 	w.Header().Set("Content-Type", "application/json")
 	var userUpdateDto dto.RegularUserUpdateDTO
@@ -82,7 +82,7 @@ func (handler *RegularUserHandler) UpdatePersonalInformations(w http.ResponseWri
 
 func (handler *RegularUserHandler) DeleteRegularUser(w http.ResponseWriter, r *http.Request) {
 
-	span := tracer.StartSpanFromRequest("Delete Regular User",opentracing.GlobalTracer(), r)
+	span := tracer.StartSpanFromRequest("Delete Regular User", opentracing.GlobalTracer(), r)
 	defer span.Finish()
 	ctx := tracer.ContextWithSpan(context.Background(), span)
 
@@ -129,7 +129,7 @@ func (handler *RegularUserHandler) FindRegularUserByUsername(w http.ResponseWrit
 	json.NewEncoder(w).Encode(regularUserPostDto)
 }
 
-func (handler *RegularUserHandler) GetAllPublicRegularUsers(w http.ResponseWriter, r *http.Request){
+func (handler *RegularUserHandler) GetAllPublicRegularUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 	allRegularUsersDto, err := handler.RegularUserService.GetAllPublicRegularUsers()
 
@@ -170,5 +170,4 @@ func (handler *RegularUserHandler) FindUsersByIds(w http.ResponseWriter, r *http
 		return
 	}
 	json.NewEncoder(w).Encode(userFollowDtos)
-}
 }

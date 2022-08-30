@@ -108,18 +108,21 @@ services:
       - backend
     command: neo4j
 
-  follow-service:
-    image: follow-service:compose_build
+
+  post-service:
+    image: post-service:compose_build
     restart: on-failure
     build:
-      context: ./followService
-      dockerfile: Dockerfile
-    depends_on:
-      - neo4j
+      context: ./postService
+      dockerfile: Dockerfile 
     networks:
       - backend
     environment:
-      PORT: ${FOLLOW_SERVICE_PORT}
+      PORT: ${POST_SERVICE_PORT}
+      USER_SERVICE_DOMAIN: ${USER_SERVICE_DOMAIN}
+      USER_SERVICE_PORT: ${USER_SERVICE_PORT}
+    depends_on:
+      - mongo-db
       
   tracing:
     image: jaegertracing/all-in-one
