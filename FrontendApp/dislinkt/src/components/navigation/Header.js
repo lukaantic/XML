@@ -12,47 +12,42 @@ import { useNavigate } from 'react-router-dom';
 
 import "./Header.scss"
 
-export default function Header({ onSliderOpen, isOpen }) {
-    const Navigate = useNavigate();
+export default function Header() {
+  const Navigate = useNavigate();
 
-    const handleLogoutClick = () => {
-        localStorage.clear();
-        Navigate('/');
-    }
+  const handleLogoutClick = () => {
+    localStorage.clear();
+    Navigate('/');
+  }
 
-    const handleRegisterClick = () => {
-        Navigate('/register')
-    }
+  const handleRegisterClick = () => {
+    Navigate('/registration')
+  }
 
-    const handleProfileClick = async () => {
-    }
+  const handleProfileClick = () => {
+  }
 
-    return (
-        <div className='header-container'>
-            <Box id='header' sx={{ flexGrow: 1 }}>
-                <AppBar position="static">
-                    <Toolbar>
-                        <IconButton
-                            size="large"
-                            edge="start"
-                            color="inherit"
-                            aria-label="menu"
-                            sx={{ mr: 2 }}
-                            onClick={onSliderOpen}
-                        >
-                            <MenuIcon />
-                        </IconButton>
-                        <Typography id='logo' variant="h6" component="div" sx={{ flexGrow: 1 }} className={isOpen && "move-logo"}>
-                            Dislinkt
-                        </Typography>
+  const handleHomeClick = () => {
+    Navigate('/home')
+  }
 
-                        <Button onClick={handleProfileClick} color="inherit">Profile</Button>
-                        <Button onClick={handleLogoutClick} color="inherit">Log out</Button>
-                        <Button onClick={handleRegisterClick} color="inherit">Register</Button>
-                    </Toolbar>
-                </AppBar>
-            </Box>
-        </div>
-    )
+  return (
+    <div className='header-container'>
+      <Box id='header' sx={{ flexGrow: 1 }}>
+        <AppBar position="static">
+          <Toolbar>
+            <Typography id='logo' variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              Dislinkt
+            </Typography>
+
+            <Button onClick={handleHomeClick} color="inherit">Home</Button>
+            <Button onClick={handleProfileClick} color="inherit">Profile</Button>
+            <Button onClick={handleLogoutClick} color="inherit">Log out</Button>
+            <Button onClick={handleRegisterClick} color="inherit">Register</Button>
+          </Toolbar>
+        </AppBar>
+      </Box>
+    </div>
+  )
 }
 
