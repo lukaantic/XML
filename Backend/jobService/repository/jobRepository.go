@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/bson"
 	"log"
+	"strings"
 )
 
 type JobRepository struct {
@@ -26,7 +27,7 @@ func (repository *JobRepository) Create(job *model.Job) (string, error) {
 
 func (repository *JobRepository) GetAllByUsername(username string) []bson.D{
 	jobsCollection := repository.Database.Collection("jobs")
-	filterCursor, err := jobsCollection.Find(context.TODO(), bson.M{"regularUser.username": username})
+	filterCursor, err := jobsCollection.Find(context.TODO(), bson.M{"regularuser.username": username})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,4 +61,14 @@ func (repository *JobRepository) DeleteJob(id primitive.ObjectID) error{
 		return err
 	}
 	return nil
+}
+
+func (repository *JobRepository) GetJobSearchResults(searchInput string, allJobs []model.Job) []model.Job{
+	var searchResults []model.Job
+	for i := 0; i<len(allJobs); i++{
+		if(strings.Contains(strings.ToLower(allJobs[i].Name), strings.ToLower(searchInput))){
+			searchResults = append(searchResults, allJobs[i])
+		}
+	}
+	return searchResults
 }

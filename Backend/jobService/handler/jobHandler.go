@@ -76,3 +76,17 @@ func (handler *JobHandler) DeleteJob(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 }
+
+func (handler *JobHandler) GetJobSearchResults(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	param := mux.Vars(r)
+	searchInput := param["searchInput"]
+	searchJobs, err := handler.JobService.GetJobSearchResults(searchInput)
+	searchJobsJson, err := json.Marshal(searchJobs)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	} else {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(searchJobsJson)
+	}
+}

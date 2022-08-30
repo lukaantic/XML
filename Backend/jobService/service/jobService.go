@@ -41,6 +41,7 @@ func createJobFromUploadDTO(jobDTO *dto.JobUploadDTO) (*model.Job, error) {
 	job.Skills = jobDTO.Skills
 	job.Description = jobDTO.Description
 	job.RegularUser = *regularUser
+	job.Name = jobDTO.Name
 	job.RegularUser.Username = jobDTO.Username
 
 	return &job, nil
@@ -93,4 +94,26 @@ func (service *JobService) DeleteJob(id primitive.ObjectID) error{
 		return err
 	}
 	return nil
+}
+
+func (service *JobService) GetJobSearchResults(searchInput string) ([]model.Job, error){
+	searchAllJobs := service.JobRepository.GetAllJobs()
+	/*if err != nil {
+		return nil, err
+	}*/
+	searchPublicJobModel := CreateJobFromDocuments(searchAllJobs)
+	searchPublicJobResults := service.JobRepository.GetJobSearchResults(searchInput, searchPublicJobModel)
+
+	return searchPublicJobResults, nil
+}
+
+func CreateJobFromDocuments(JobDocuments []bson.D) []model.Job {
+	var jobs []model.Job
+	for i := 0; i < len(JobDocuments); i++ {
+		var job model.Job
+		bsonBytes, _ := bson.Marshal(JobDocuments[i])
+		_ = bson.Unmarshal(bsonBytes, &job)
+		jobs = append(jobs, job)
+	}
+	return jobs
 }

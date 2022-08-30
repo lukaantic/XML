@@ -48,10 +48,11 @@ func handleFunc(jobHandler *handler.JobHandler) {
 	ruter := mux.NewRouter().StrictSlash(true)
 	ruter.HandleFunc("/new-job", jobHandler.CreateNewJob).Methods("POST")
 	ruter.HandleFunc("/get-all-jobs", jobHandler.GetAllJobs).Methods("GET")
-	ruter.HandleFunc("/get-all-users-jobs/{username}", jobHandler.GetAllRegularUserJobs).Methods("GET") //ne radi
+	ruter.HandleFunc("/get-all-users-jobs/{username}", jobHandler.GetAllRegularUserJobs).Methods("GET") 
 	ruter.HandleFunc("/delete-job/{id}", jobHandler.DeleteJob).Methods("DELETE")
+	ruter.HandleFunc("/job-search/{searchInput}", jobHandler.GetJobSearchResults).Methods("GET")
 
-
+	
 
 	http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), ruter)
 
