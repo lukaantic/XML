@@ -29,17 +29,10 @@ const ExpandMore = styled((props) => {
 }));
 
 export default function RecipeReviewCard() {
-  const [expanded, setExpanded] = React.useState(false);
-
-  const handleExpandClick = () => {
-    setExpanded(!expanded);
-  };
-
-  const [isSliderOpen, setIsSliderOpen] = React.useState(false)
 
   return (
     <div>
-      <Header isOpen={isSliderOpen} onSliderOpen={() => setIsSliderOpen(true)} />
+      <Header />
       <div style={{ display: "flex", flex: 1, flexDirection: "column", alignItems: "center", width: "100%", margin: 50 }}>
         <UserPost />
       </div>

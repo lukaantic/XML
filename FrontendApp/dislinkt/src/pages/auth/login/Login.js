@@ -19,7 +19,7 @@ const theme = createTheme();
 
 export default function Login() {
   const navigate = useNavigate();
-//   const { login } = useContext(AuthenticationContext);
+  //   const { login } = useContext(AuthenticationContext);
 
   const [loginData, setLoginData] = useState({
     email: '',
@@ -30,18 +30,18 @@ export default function Login() {
     setLoginData({ ...loginData, [name]: value });
   };
 
-//   useEffect(() => {
-//     let date = new Date()
-//     date.setHours(date.getHours() + 24)
-//     let loginTime = { value: "value", timestamp: date }
-//     localStorage.setItem("loginTime", JSON.stringify(loginTime));
-//   }, [])
+  //   useEffect(() => {
+  //     let date = new Date()
+  //     date.setHours(date.getHours() + 24)
+  //     let loginTime = { value: "value", timestamp: date }
+  //     localStorage.setItem("loginTime", JSON.stringify(loginTime));
+  //   }, [])
 
-//   let token = GetTokenFromLocalStorage();
+  //   let token = GetTokenFromLocalStorage();
 
-//   if (token) {
-//     return <Navigate to="/home" replace />;
-//   }
+  //   if (token) {
+  //     return <Navigate to="/home" replace />;
+  //   }
 
   const loginUser = (event) => {
     event.preventDefault();
@@ -49,21 +49,19 @@ export default function Login() {
     // login(loginData, successCallback, errorCallback);
   };
 
-//   const successCallback = async () => {
-//     let result = await userService['getAdminProfile']();
-//     localStorage.setItem('loggedAdmin', JSON.stringify(result[0]));
-//     navigate('/home');
-//   };
+  //   const successCallback = async () => {
+  //     let result = await userService['getAdminProfile']();
+  //     localStorage.setItem('loggedAdmin', JSON.stringify(result[0]));
+  //     navigate('/home');
+  //   };
 
-//   const errorCallback = (error) => {
-//     alert(error)
-//   };
-
-const [ isSliderOpen, setIsSliderOpen ] = useState(false)
+  //   const errorCallback = (error) => {
+  //     alert(error)
+  //   };
 
   return (
     <ThemeProvider theme={theme}>
-    <Header isOpen={isSliderOpen} onSliderOpen={() => setIsSliderOpen(true)}/>
+      <Header />
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box

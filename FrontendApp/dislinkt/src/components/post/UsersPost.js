@@ -28,48 +28,48 @@ import { Link } from '@mui/material';
 // }));
 
 const UserPost = ({ title, urls, image, userName }) => {
-    // const [expanded, setExpanded] = React.useState(false);
+  // const [expanded, setExpanded] = React.useState(false);
 
-    // const handleExpandClick = () => {
-    //     setExpanded(!expanded);
-    // };
+  // const handleExpandClick = () => {
+  //     setExpanded(!expanded);
+  // };
 
-    return (
-        <Card sx={{ maxWidth: 345 }} style={{ backgroundColor: "#99CCEE", width: 400 }}>
-            <CardHeader
-                avatar={
-                    <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe" />
-                }
-                // action={
-                //     <IconButton aria-label="settings">
-                //         <MoreVertIcon />
-                //     </IconButton>
-                // }
-                title={title}
-                subheader={userName}
-            />
-            <CardMedia
-                component="img"
-                height="194"
-                image={image}
-            />
-            <CardContent>
-                {
-                    urls?.map(({ url }, index) => {
-                        <Link key={index} href={url}>{url}</Link>
-                    })
-                }
-                {/* <Typography variant="body2" color="text.secondary">
+  return (
+    <Card sx={{ maxWidth: 345 }} style={{ backgroundColor: "#99CCEE", width: 400 }}>
+      <CardHeader
+        avatar={
+          <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe" />
+        }
+        // action={
+        //     <IconButton aria-label="settings">
+        //         <MoreVertIcon />
+        //     </IconButton>
+        // }
+        title={title}
+        subheader={userName}
+      />
+      <CardMedia
+        component="img"
+        height="194"
+        image={image}
+      />
+      <CardContent>
+        {
+          urls?.map(({ url }, index) => {
+            <Link key={index} href={url}>{url}</Link>
+          })
+        }
+        {/* <Typography variant="body2" color="text.secondary">
                     This impressive paella is a perfect party dish and a fun meal to cook
                     together with your guests. Add 1 cup of frozen peas along with the mussels,
                     if you like.
                 </Typography> */}
-            </CardContent>
-            <CardActions disableSpacing>
-                <IconButton aria-label="add to favorites">
-                    <FavoriteIcon />
-                </IconButton>
-                {/* <ExpandMore
+      </CardContent>
+      <CardActions disableSpacing>
+        <IconButton aria-label="add to favorites">
+          <FavoriteIcon />
+        </IconButton>
+        {/* <ExpandMore
                     expand={expanded}
                     onClick={handleExpandClick}
                     aria-expanded={expanded}
@@ -77,8 +77,8 @@ const UserPost = ({ title, urls, image, userName }) => {
                 >
                     <ExpandMoreIcon />
                 </ExpandMore> */}
-            </CardActions>
-            {/* <Collapse in={expanded} timeout="auto" unmountOnExit>
+      </CardActions>
+      {/* <Collapse in={expanded} timeout="auto" unmountOnExit>
                 <CardContent>
                     <Typography paragraph>Method:</Typography>
                     <Typography paragraph>
@@ -94,8 +94,8 @@ const UserPost = ({ title, urls, image, userName }) => {
                     </Typography>
                 </CardContent>
             </Collapse> */}
-        </Card>
-    );
+    </Card>
+  );
 }
 
 export default UserPost;
