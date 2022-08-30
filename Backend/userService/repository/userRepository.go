@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"userService/model"
-
+	"userService/tracer"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -15,7 +15,13 @@ type RegularUserRepository struct {
 	Database *mongo.Database
 }
 
-func (repository *RegularUserRepository) Register(user *model.RegularUser) (string, error) {
+func (repository *RegularUserRepository) Register(ctx context.Context,user *model.RegularUser) (string, error) {
+	
+	span := tracer.StartSpanFromContext(ctx, "Register")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+
 	regularUserCollection := repository.Database.Collection("regularUsers")
 	res, err := regularUserCollection.InsertOne(context.TODO(), &user)
 	if err != nil {
@@ -24,7 +30,12 @@ func (repository *RegularUserRepository) Register(user *model.RegularUser) (stri
 	return res.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
-func (repository *RegularUserRepository) ExistByUsername(username string) bool {
+func (repository *RegularUserRepository) ExistByUsername(ctx context.Context, username string) bool {
+
+	span := tracer.StartSpanFromContext(ctx, "Register")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	regularUserCollection := repository.Database.Collection("regularUsers")
 	filterCursor, err := regularUserCollection.Find(context.TODO(), bson.M{"username": username})
 	if err != nil {
@@ -41,7 +52,11 @@ func (repository *RegularUserRepository) ExistByUsername(username string) bool {
 	return false
 }
 
-func (repository *RegularUserRepository) DeleteRegularUser(id primitive.ObjectID) error {
+func (repository *RegularUserRepository) DeleteRegularUser(ctx context.Context,id primitive.ObjectID) error {
+
+	span := tracer.StartSpanFromContext(ctx, "Delete")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	regularUserCollection := repository.Database.Collection("regularUsers")
 	_, err := regularUserCollection.DeleteOne(context.TODO(), bson.M{"_id": id})
@@ -132,16 +147,18 @@ func (repository *RegularUserRepository) FindUserByUsername(username string) (*m
 	return regularUser, nil
 }
 
-func (repository *RegularUserRepository) GetAllPublicRegularUsers() ([]bson.D, error) {
+func (repository *RegularUserRepository) GetAllPublicRegularUsers() ([]bson.D, error){
 
 	usersCollection := repository.Database.Collection("regularUsers")
 	filterCursor, err := usersCollection.Find(context.TODO(), bson.M{"privacyType": 0})
 	if err != nil {
+		fmt.Println("repo greska")
 		log.Fatal(err)
 	}
 
 	var postsFiltered []bson.D
 	if err = filterCursor.All(context.TODO(), &postsFiltered); err != nil {
+		fmt.Println("repo greska2")
 		log.Fatal(err)
 	}
 	return postsFiltered, nil

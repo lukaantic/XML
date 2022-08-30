@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"userService/handler"
 	"userService/repository"
 	"userService/service"
+	"userService/postserver"
+	"os"
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -47,6 +48,8 @@ func initDatabase() *mongo.Database {
 }
 func handleFunc(userHandler *handler.RegularUserHandler) {
 
+	fmt.Println("cekam zahteve")
+
 	ruter := mux.NewRouter().StrictSlash(true)
 	ruter.HandleFunc("/register", userHandler.Register).Methods("POST")
 	ruter.HandleFunc("/update", userHandler.UpdatePersonalInformations).Methods("PUT")
@@ -54,7 +57,6 @@ func handleFunc(userHandler *handler.RegularUserHandler) {
 	ruter.HandleFunc("/update-profile-privacy", userHandler.UpdateProfilePrivacy).Methods("PUT")
 	ruter.HandleFunc("/find-user/{username}", userHandler.FindRegularUserByUsername).Methods("GET")
 	ruter.HandleFunc("/c", userHandler.GetAllPublicRegularUsers).Methods("GET")
-	ruter.HandleFunc("/by-username/{username}", userHandler.CreateRegularUserPostDTOByUsername).Methods("GET")
 	ruter.HandleFunc("/by-users-ids", userHandler.FindUsersByIds).Methods("POST")
 	//ruter.HandleFunc("/get-all-regular-users", userHandler.GetAllRegularUsers).Methods("GET")
 
@@ -65,8 +67,17 @@ func handleFunc(userHandler *handler.RegularUserHandler) {
 }
 
 func main() {
+	
+	server, err := postserver.NewPostServer()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	defer server.CloseTracer()
+	defer server.CloseDB()
+
 	userDatabase := initDatabase()
-	fmt.Println(os.Getenv("AUTHENTICATION_SERVICE_PORT"))
+
 	userRepository := initUserRepository(userDatabase)
 	userService := initUserService(userRepository)
 	userHandler := initUserHandler(userService)

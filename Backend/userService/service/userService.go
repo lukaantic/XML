@@ -6,36 +6,41 @@ import (
 	"userService/dto"
 	"userService/model"
 	"userService/repository"
+	"userService/tracer"
 
 	"go.mongodb.org/mongo-driver/bson"
-
+	"os"
 	"bytes"
 	"encoding/json"
-	"os"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"context"
 )
 
 type RegularUserService struct {
 	RegularUserRepository *repository.RegularUserRepository
 }
 
-func (service *RegularUserService) Register(regularUserRegistrationDto dto.RegularUserRegistrationDTO) error {
-	fmt.Println("Creating regular user")
+func (service *RegularUserService) Register(ctx context.Context,regularUserRegistrationDto dto.RegularUserRegistrationDTO) error {
 
-	if service.RegularUserRepository.ExistByUsername(regularUserRegistrationDto.Username) {
+	span := tracer.StartSpanFromContext(ctx, "Register")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+
+	if service.RegularUserRepository.ExistByUsername(ctx , regularUserRegistrationDto.Username) {
 		return fmt.Errorf("username is already taken")
 	}
 
 	var regularUser = createRegularUserFromRegularUserRegistrationDTO(&regularUserRegistrationDto)
-	createdUserId, err := service.RegularUserRepository.Register(regularUser)
+	_, err := service.RegularUserRepository.Register(ctx, regularUser)
 	if err != nil {
 		return err
 	}
-	err2 := service.registerUserInAuthenticationService(regularUserRegistrationDto, createdUserId)
+	/*err2 := service.registerUserInAuthenticationService(regularUserRegistrationDto, createdUserId)
 	if err2 != nil {
 		return err2
-	}
+	}*/
+	fmt.Println("User created")
 	return nil
 }
 
@@ -85,8 +90,9 @@ func (service *RegularUserService) registerUserInAuthenticationService(regularUs
 		"name":     regularUserRegistrationDto.Name,
 		"surname":  regularUserRegistrationDto.Surname,
 	})
-	requestUrl := fmt.Sprintf("http://%s:%s/register", os.Getenv("AUTHENTICATION_SERVICE_DOMAIN"), os.Getenv("AUTHENTICATION_SERVICE_PORT"))
 
+	requestUrl := fmt.Sprintf("http://%s:%s/register", os.Getenv("AUTHENTICATION_SERVICE_DOMAIN"), os.Getenv("AUTHENTICATION_SERVICE_PORT"))
+	//requestUrl := "http://localhost:1231/register"
 	resp, err := http.Post(requestUrl, "application/json", bytes.NewBuffer(postBody))
 	if err != nil {
 		fmt.Println(err)
@@ -96,10 +102,14 @@ func (service *RegularUserService) registerUserInAuthenticationService(regularUs
 	return nil
 }
 
-func (service *RegularUserService) UpdatePersonalInformations(regularUserUpdateDto dto.RegularUserUpdateDTO) error {
+func (service *RegularUserService) UpdatePersonalInformations(ctx context.Context,regularUserUpdateDto dto.RegularUserUpdateDTO) error {
 	fmt.Println("Updating regular user")
 
-	if service.RegularUserRepository.ExistByUsername(regularUserUpdateDto.Username) {
+	span := tracer.StartSpanFromContext(ctx, "Register")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)	
+
+	if service.RegularUserRepository.ExistByUsername(ctx, regularUserUpdateDto.Username) {
 		id, _ := primitive.ObjectIDFromHex(regularUserUpdateDto.Id)
 		if service.RegularUserRepository.UsernameChanged(regularUserUpdateDto.Username, id) {
 			return fmt.Errorf("username is already taken")
@@ -119,6 +129,7 @@ func (service *RegularUserService) UpdatePersonalInformations(regularUserUpdateD
 }
 
 func (service *RegularUserService) updateUserInAuthenticationService(regularUserUpdateDto dto.RegularUserUpdateDTO, createdUserId string) error {
+
 	postBody, _ := json.Marshal(map[string]string{
 		"_id":      createdUserId,
 		"email":    regularUserUpdateDto.Email,
@@ -127,6 +138,9 @@ func (service *RegularUserService) updateUserInAuthenticationService(regularUser
 		"surname":  regularUserUpdateDto.Surname,
 	})
 	requestUrl := fmt.Sprintf("http://%s:%s/update", os.Getenv("AUTHENTICATION_SERVICE_DOMAIN"), os.Getenv("AUTHENTICATION_SERVICE_PORT"))
+
+
+	//requestUrl := "http://localhost:1231/update"
 	resp, err := http.Post(requestUrl, "application/json", bytes.NewBuffer(postBody))
 	if err != nil {
 		fmt.Println(err)
@@ -136,12 +150,17 @@ func (service *RegularUserService) updateUserInAuthenticationService(regularUser
 	return nil
 }
 
-func (service *RegularUserService) DeleteRegularUser(deleteUserDto dto.DeleteUserDTO) error {
+func (service *RegularUserService) DeleteRegularUser(ctx context.Context,deleteUserDto dto.DeleteUserDTO) error {
+
+	span := tracer.StartSpanFromContext(ctx, "Delete")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	id, err := primitive.ObjectIDFromHex(deleteUserDto.Id)
 	if err != nil {
 		return err
 	}
-	err1 := service.RegularUserRepository.DeleteRegularUser(id)
+	err1 := service.RegularUserRepository.DeleteRegularUser(ctx, id)
 	if err1 != nil {
 		return err1
 	}
@@ -206,6 +225,7 @@ func createRegularUserProfileDataDto(regularUser *model.RegularUser) *dto.Regula
 func (service *RegularUserService) GetAllPublicRegularUsers() ([]dto.RegularUserDTO, error) {
 	allRegularUsers, err := service.RegularUserRepository.GetAllPublicRegularUsers()
 	if err != nil {
+		fmt.Println("serv greska")
 		return nil, err
 	}
 

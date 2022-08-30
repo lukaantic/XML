@@ -6,8 +6,12 @@ import (
 	"net/http"
 	"userService/dto"
 	"userService/service"
-
+	"userService/tracer"
+	"userService/helper"
+	//"userService/poststore"
 	"github.com/gorilla/mux"
+	"github.com/opentracing/opentracing-go"
+	"context"
 )
 
 type RegularUserHandler struct {
@@ -15,6 +19,12 @@ type RegularUserHandler struct {
 }
 
 func (handler *RegularUserHandler) Register(w http.ResponseWriter, r *http.Request) {
+
+	span := tracer.StartSpanFromRequest("Register Regular User",opentracing.GlobalTracer(), r)
+	defer span.Finish()
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
+
 	w.Header().Set("Content-Type", "application/json")
 	var regularUserRegistrationDto dto.RegularUserRegistrationDTO
 	err := json.NewDecoder(r.Body).Decode(&regularUserRegistrationDto)
@@ -22,7 +32,7 @@ func (handler *RegularUserHandler) Register(w http.ResponseWriter, r *http.Reque
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = handler.RegularUserService.Register(regularUserRegistrationDto)
+	err = handler.RegularUserService.Register(ctx, regularUserRegistrationDto)
 	if err != nil {
 		if err.Error() == "username is already taken" {
 			w.WriteHeader(http.StatusConflict)
@@ -33,9 +43,24 @@ func (handler *RegularUserHandler) Register(w http.ResponseWriter, r *http.Reque
 		w.WriteHeader(http.StatusCreated)
 	}
 
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	
+	_, err = helper.DecodeBody(ctx, r.Body)
+	if err != nil {
+		tracer.LogError(span, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	
 }
 
 func (handler *RegularUserHandler) UpdatePersonalInformations(w http.ResponseWriter, r *http.Request) {
+
+	span := tracer.StartSpanFromRequest("Update Regular User",opentracing.GlobalTracer(), r)
+	defer span.Finish()
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
+
 	w.Header().Set("Content-Type", "application/json")
 	var userUpdateDto dto.RegularUserUpdateDTO
 	err := json.NewDecoder(r.Body).Decode(&userUpdateDto)
@@ -43,7 +68,7 @@ func (handler *RegularUserHandler) UpdatePersonalInformations(w http.ResponseWri
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = handler.RegularUserService.UpdatePersonalInformations(userUpdateDto)
+	err = handler.RegularUserService.UpdatePersonalInformations(ctx, userUpdateDto)
 	if err != nil {
 		if err.Error() == "username is already taken" {
 			w.WriteHeader(http.StatusConflict)
@@ -56,6 +81,11 @@ func (handler *RegularUserHandler) UpdatePersonalInformations(w http.ResponseWri
 }
 
 func (handler *RegularUserHandler) DeleteRegularUser(w http.ResponseWriter, r *http.Request) {
+
+	span := tracer.StartSpanFromRequest("Delete Regular User",opentracing.GlobalTracer(), r)
+	defer span.Finish()
+	ctx := tracer.ContextWithSpan(context.Background(), span)
+
 	w.Header().Set("content-type", "application/json")
 	var deleteUserDto dto.DeleteUserDTO
 	err1 := json.NewDecoder(r.Body).Decode(&deleteUserDto)
@@ -63,7 +93,7 @@ func (handler *RegularUserHandler) DeleteRegularUser(w http.ResponseWriter, r *h
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	err := handler.RegularUserService.DeleteRegularUser(deleteUserDto)
+	err := handler.RegularUserService.DeleteRegularUser(ctx, deleteUserDto)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -99,12 +129,13 @@ func (handler *RegularUserHandler) FindRegularUserByUsername(w http.ResponseWrit
 	json.NewEncoder(w).Encode(regularUserPostDto)
 }
 
-func (handler *RegularUserHandler) GetAllPublicRegularUsers(w http.ResponseWriter, r *http.Request) {
+func (handler *RegularUserHandler) GetAllPublicRegularUsers(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("content-type", "application/json")
 	allRegularUsersDto, err := handler.RegularUserService.GetAllPublicRegularUsers()
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println("hen greska")
 	} else {
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(allRegularUsersDto)
@@ -139,4 +170,5 @@ func (handler *RegularUserHandler) FindUsersByIds(w http.ResponseWriter, r *http
 		return
 	}
 	json.NewEncoder(w).Encode(userFollowDtos)
+}
 }

@@ -23,7 +23,9 @@ services:
     networks:
       - backend
     environment:
-      - PORT=8081   
+      - PORT=8081 
+#    ports:
+#      - 2109:2109     
     depends_on:
       - auth_baza  
 
@@ -35,8 +37,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}      
       POSTGRES_DB: ${POSTGRES_DBNAME}
-    ports:
-      - 5432:5432
+#    ports:
+#      - 5432:5432
     networks:
       - backend
 
@@ -45,30 +47,36 @@ services:
     restart: on-failure
     build:
       context: ./userService
-      dockerfile: Dockerfile 
-    networks:
-      - backend
+      dockerfile: Dockerfile
     environment:
-      PORT: ${USER_SERVICE_PORT}
+      USER_SERVICE_PORT: ${USER_SERVICE_PORT}
+      USER_SERVICE_DOMAIN: ${USER_SERVICE_DOMAIN}
       AUTHENTICATION_SERVICE_DOMAIN: ${AUTHENTICATION_SERVICE_DOMAIN}
       AUTHENTICATION_SERVICE_PORT: ${AUTHENTICATION_SERVICE_PORT}
+      POSTGRES_USER: ${TRACING_USER}
+      POSTGRES_PASSWORD: ${TRACING_PASSWORD}      
+      POSTGRES_DB: ${TRACING_DBNAME} 
+      POSTGRES_PORT: ${TRACING_PORT}     
+      JAEGER_SERVICE_NAME: user
+      JAEGER_AGENT_HOST: tracing
+      JAEGER_AGENT_PORT: 6831
+      JAEGER_SAMPLER_MANAGER_HOST_PORT: jaeger:5778
+      JAEGER_SAMPLER_TYPE: const
+      JAEGER_SAMPLER_PARAM: 1
+    networks:
+      - backend
+#    ports:
+#      - 8081:8081
     depends_on:
       - mongo-db
 
-  post-service:
-    image: post-service:compose_build
+  mongo-db:
+    image: mongo
     restart: on-failure
-    build:
-      context: ./postService
-      dockerfile: Dockerfile 
+#    ports:
+#      - 27017:27017
     networks:
       - backend
-    environment:
-      PORT: ${POST_SERVICE_PORT}
-      USER_SERVICE_DOMAIN: ${USER_SERVICE_DOMAIN}
-      USER_SERVICE_PORT: ${USER_SERVICE_PORT}
-    depends_on:
-      - mongo-db
 
   job-service:
     image: job-service:compose_build
@@ -84,12 +92,57 @@ services:
       - backend
     depends_on:
       - mongo-db
-
-  mongo-db:
-    image: mongo
+  
+  neo4j:
+    image: neo4j:latest
+    container_name: 'neo4j-db'
+    volumes:
+      - ./neo4j/plugins:/plugins
+    environment:
+      NEO4J_AUTH: ${NEO4J_AUTH}
+    ports:
+      - 7474:7474
+      - 7687:7687
     restart: on-failure
-#    ports:
-#      - 27017:27017
+    networks:
+      - backend
+    command: neo4j
+
+  follow-service:
+    image: follow-service:compose_build
+    restart: on-failure
+    build:
+      context: ./followService
+      dockerfile: Dockerfile
+    depends_on:
+      - neo4j
+    networks:
+      - backend
+    environment:
+      PORT: ${FOLLOW_SERVICE_PORT}
+      
+  tracing:
+    image: jaegertracing/all-in-one
+    container_name: jaeger
+    networks:
+      - backend
+    ports:
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "16686:16686"
+      - "14268:14268"
+      - "14250:14250"  
+
+  trace_db:
+    restart: always
+    image: postgres
+    container_name: trace_db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=tracing
     networks:
       - backend
 
