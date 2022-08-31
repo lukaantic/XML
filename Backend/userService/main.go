@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"userService/handler"
+	"userService/postserver"
 	"userService/repository"
 	"userService/service"
-	"userService/postserver"
-	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -58,20 +59,27 @@ func handleFunc(userHandler *handler.RegularUserHandler) {
 	ruter.HandleFunc("/find-user/{username}", userHandler.FindRegularUserByUsername).Methods("GET")
 	ruter.HandleFunc("/public-regular-users", userHandler.GetAllPublicRegularUsers).Methods("GET")
 
-	//err := http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), ruter)
+	c := SetupCors()
 
-	connString := fmt.Sprintf(":%s", os.Getenv("USER_SERVICE_PORT"))
-
-	fmt.Println(connString)
-	err := http.ListenAndServe(connString, ruter)
+	http.Handle("/", c.Handler(ruter))
+	err := http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), c.Handler(ruter))
 	//err := http.ListenAndServe(":8081", ruter)
 	if err != nil {
 		log.Println(err)
 	}
 }
 
+func SetupCors() *cors.Cors {
+	return cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"}, // All origins, for now
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	})
+}
+
 func main() {
-	
+
 	server, err := postserver.NewPostServer()
 	if err != nil {
 		log.Fatal(err.Error())

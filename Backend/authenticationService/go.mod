@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gorilla/mux v1.8.0
+	github.com/rs/cors v1.8.2
 	gorm.io/driver/postgres v1.3.9
 	gorm.io/gorm v1.23.8
 )

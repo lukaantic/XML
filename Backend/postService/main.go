@@ -11,6 +11,7 @@ import (
 	"postService/service"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -56,10 +57,22 @@ func handleFunc(handlerPost *handler.PostHandler) {
 	ruter.HandleFunc("/dislike-post", handlerPost.DislikePost).Methods("PUT")
 	ruter.HandleFunc("/delete-post/{id}", handlerPost.DeletePost).Methods("DELETE")
 
-	err := http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), ruter)
+	c := SetupCors()
+
+	http.Handle("/", c.Handler(ruter))
+	err := http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), c.Handler(ruter))
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func SetupCors() *cors.Cors {
+	return cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"}, // All origins, for now
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	})
 }
 
 func main() {

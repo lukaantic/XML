@@ -8,20 +8,22 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 const (
-	host     = "auth_baza"
+	host = "auth_baza"
 	//host     = "localhost"
 	port     = 5432
 	user     = "postgres"
 	password = "postgres"
 	dbname   = "korisnici"
-  )
+)
 
 func main() {
 
@@ -34,26 +36,24 @@ func main() {
 
 	handlerFunkcija(hend)
 
-
 }
 
 func initBaza() *gorm.DB {
 
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",host, port, user, password, dbname)
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 
 	fmt.Println(dsn)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err!= nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 
 	db.AutoMigrate(&model.User{})
-	
-	
-	useri:= []model.User{
-		{UserRole: 3, Name: "Luka", Surname: "Antic",Password: "2810",Username: "luka"},
-		{UserRole: 3, Name: "Vladan",Surname: "Lalic",Password: "2302",Username: "lala"},	
+
+	useri := []model.User{
+		{UserRole: 3, Name: "Luka", Surname: "Antic", Password: "2810", Username: "luka"},
+		{UserRole: 3, Name: "Vladan", Surname: "Lalic", Password: "2302", Username: "lala"},
 	}
 
 	for _, user := range useri {
@@ -66,27 +66,42 @@ func initRepo(database *gorm.DB) *repository.AuthRepository {
 	return &repository.AuthRepository{Database: database}
 }
 
-func initServis(repository *repository.AuthRepository) *service.AuthService{
+func initServis(repository *repository.AuthRepository) *service.AuthService {
 	return &service.AuthService{AuthRepository: repository}
 }
 
-func initHandler(service *service.AuthService) *handler.AuthHandler{
-	return &handler.AuthHandler{Handler: service }
+func initHandler(service *service.AuthService) *handler.AuthHandler {
+	return &handler.AuthHandler{Handler: service}
 }
 
-func handlerFunkcija (handler *handler.AuthHandler){
+func handlerFunkcija(handler *handler.AuthHandler) {
 
 	ruter := mux.NewRouter().StrictSlash(true)
 
-	ruter.HandleFunc("/register",handler.RegisterUser).Methods("POST")
+	ruter.HandleFunc("/register", handler.RegisterUser).Methods("POST")
 	// za update je potrebno da polje 'username' bude popunjeno
-	ruter.HandleFunc("/update",handler.UpdateUser).Methods("POST")
+	ruter.HandleFunc("/update", handler.UpdateUser).Methods("POST")
 	// za delete je potreban 'id'
-	ruter.HandleFunc("/delete",handler.DeleteUser).Methods("POST")
+	ruter.HandleFunc("/delete", handler.DeleteUser).Methods("POST")
 	// za login treba 'username' i 'lozinka'
-	ruter.HandleFunc("/login",handler.Login).Methods("POST")	
+	ruter.HandleFunc("/login", handler.Login).Methods("POST")
 	fmt.Println("sad cu da slusam")
 
-	http.ListenAndServe(":8081",ruter)
+	c := SetupCors()
 
+	http.Handle("/", c.Handler(ruter))
+	err := http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), c.Handler(ruter))
+	if err != nil {
+		log.Println(err)
+	}
+
+}
+
+func SetupCors() *cors.Cors {
+	return cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"}, // All origins, for now
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	})
 }
