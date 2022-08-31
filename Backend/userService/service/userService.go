@@ -244,7 +244,6 @@ func (service *RegularUserService) GetAllPublicRegularUsers() ([]dto.RegularUser
 		fmt.Println("serv greska")
 		return nil, err
 	}
-.
 	allRegularUsersModel := CreateUserFromDocuments(allRegularUsers)
 
 	allRegularUsersDto := createRegularUserDtoFromRegularUser(allRegularUsersModel)
