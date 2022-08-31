@@ -8,12 +8,13 @@ import (
 	"userService/repository"
 	"userService/tracer"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"os"
 	"bytes"
-	"encoding/json"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"context"
+	"encoding/json"
+	"os"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	//"string"
 )
 
@@ -21,14 +22,13 @@ type RegularUserService struct {
 	RegularUserRepository *repository.RegularUserRepository
 }
 
-func (service *RegularUserService) Register(ctx context.Context,regularUserRegistrationDto dto.RegularUserRegistrationDTO) error {
+func (service *RegularUserService) Register(ctx context.Context, regularUserRegistrationDto dto.RegularUserRegistrationDTO) error {
 
 	span := tracer.StartSpanFromContext(ctx, "Register")
 	defer span.Finish()
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 
-
-	if service.RegularUserRepository.ExistByUsername(ctx , regularUserRegistrationDto.Username) {
+	if service.RegularUserRepository.ExistByUsername(ctx, regularUserRegistrationDto.Username) {
 		return fmt.Errorf("username is already taken")
 	}
 
@@ -37,7 +37,6 @@ func (service *RegularUserService) Register(ctx context.Context,regularUserRegis
 	if err != nil {
 		return err
 	}
-
 
 	err2 := service.registerUserInAuthenticationService(regularUserRegistrationDto, userId)
 	if err2 != nil {
@@ -95,9 +94,9 @@ func createRegularUserFromRegularUserRegistrationDTO(regularUserDto *dto.Regular
 
 func (service *RegularUserService) registerUserInAuthenticationService(regularUserRegistrationDto dto.RegularUserRegistrationDTO, createdUserId string) error {
 
-		fmt.Println("Ovo cu da saljem kao id:", createdUserId)
+	fmt.Println("Ovo cu da saljem kao id:", createdUserId)
 	postBody, _ := json.Marshal(map[string]string{
-		"id":   createdUserId,
+		"id":       createdUserId,
 		"password": regularUserRegistrationDto.Password,
 		"username": regularUserRegistrationDto.Username,
 		"name":     regularUserRegistrationDto.Name,
@@ -114,12 +113,12 @@ func (service *RegularUserService) registerUserInAuthenticationService(regularUs
 	return nil
 }
 
-func (service *RegularUserService) UpdatePersonalInformations(ctx context.Context,regularUserUpdateDto dto.RegularUserUpdateDTO) error {
+func (service *RegularUserService) UpdatePersonalInformations(ctx context.Context, regularUserUpdateDto dto.RegularUserUpdateDTO) error {
 	fmt.Println("Updating regular user")
 
 	span := tracer.StartSpanFromContext(ctx, "Register")
 	defer span.Finish()
-	ctx = tracer.ContextWithSpan(context.Background(), span)	
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	if service.RegularUserRepository.ExistByUsername(ctx, regularUserUpdateDto.Username) {
 		id, _ := primitive.ObjectIDFromHex(regularUserUpdateDto.Id)
@@ -151,7 +150,6 @@ func (service *RegularUserService) updateUserInAuthenticationService(regularUser
 	})
 	requestUrl := fmt.Sprintf("http://%s:%s/update", os.Getenv("AUTHENTICATION_SERVICE_DOMAIN"), os.Getenv("AUTHENTICATION_SERVICE_PORT"))
 
-
 	//requestUrl := "http://localhost:1231/update"
 	resp, err := http.Post(requestUrl, "application/json", bytes.NewBuffer(postBody))
 	if err != nil {
@@ -162,7 +160,7 @@ func (service *RegularUserService) updateUserInAuthenticationService(regularUser
 	return nil
 }
 
-func (service *RegularUserService) DeleteRegularUser(ctx context.Context,deleteUserDto dto.DeleteUserDTO) error {
+func (service *RegularUserService) DeleteRegularUser(ctx context.Context, deleteUserDto dto.DeleteUserDTO) error {
 
 	span := tracer.StartSpanFromContext(ctx, "Delete")
 	defer span.Finish()

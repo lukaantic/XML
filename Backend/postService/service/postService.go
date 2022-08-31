@@ -282,7 +282,6 @@ func (service *PostService) DislikePost(postLikeDTO dto.PostLikeDTO) error {
 	return nil
 }
 
-
 func (service *PostService) DeletePost(id primitive.ObjectID) error {
 	err := service.PostRepository.DeletePost(id)
 	if err != nil {

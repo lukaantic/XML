@@ -60,7 +60,6 @@ func (repository *PostRepository) GetAllPublic() []bson.D {
 
 	var postsFiltered []bson.D
 	if err = filterCursor.All(context.TODO(), &postsFiltered); err != nil {
-		fmt.Println("sadasda")
 		log.Fatal(err)
 	}
 	return postsFiltered
