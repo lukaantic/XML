@@ -8,6 +8,7 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate, Navigate } from 'react-router-dom';
 import Header from '../../../components/navigation/Header';
+import { AuthenticationContext } from '../../../context';
 // import { AuthenticationContext } from '../../../context/AuthenticationContext';
 
 // import { userService } from '../../../services';
@@ -18,11 +19,12 @@ import Header from '../../../components/navigation/Header';
 const theme = createTheme();
 
 export default function Login() {
+  const { login } = useContext(AuthenticationContext);
   const navigate = useNavigate();
   //   const { login } = useContext(AuthenticationContext);
 
   const [loginData, setLoginData] = useState({
-    email: '',
+    username: '',
     password: '',
   });
 
@@ -46,18 +48,16 @@ export default function Login() {
   const loginUser = (event) => {
     event.preventDefault();
 
-    // login(loginData, successCallback, errorCallback);
+    login(loginData, successCallback, errorCallback);
   };
 
-  //   const successCallback = async () => {
-  //     let result = await userService['getAdminProfile']();
-  //     localStorage.setItem('loggedAdmin', JSON.stringify(result[0]));
-  //     navigate('/home');
-  //   };
+  const successCallback = async () => {
+    navigate('/home');
+  };
 
-  //   const errorCallback = (error) => {
-  //     alert(error)
-  //   };
+  const errorCallback = (error) => {
+    alert(error)
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -80,12 +80,12 @@ export default function Login() {
               margin="normal"
               required
               fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
+              id="username"
+              label="Username"
+              name="username"
+              autoComplete="username"
               autoFocus
-              onChange={(event) => handleChange('email', event.target.value)}
+              onChange={(event) => handleChange('username', event.target.value)}
             />
             <TextField
               margin="normal"

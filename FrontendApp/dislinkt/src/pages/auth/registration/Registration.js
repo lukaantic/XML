@@ -11,17 +11,18 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Header from '../../../components/navigation/Header';
-// import { AuthenticationContext } from '../../../context/AuthenticationContext';
+import { AuthenticationContext } from '../../../context/AuthenticationContext';
+import { useNavigate } from 'react-router-dom';
 
 
 const theme = createTheme();
 
 const Registration = () => {
-  localStorage.removeItem('token');
+  const Navigate = useNavigate();
 
-  // const { signUp } = useContext(AuthenticationContext);
+  localStorage.removeItem('@token');
 
-  // const { resendVerification } = useContext(AuthenticationContext);
+  const { signUp } = useContext(AuthenticationContext);
 
   const [signUpData, setSignUpData] = useState({
     email: '',
@@ -29,20 +30,30 @@ const Registration = () => {
     firstName: '',
     lastName: '',
     confirmPassword: '',
+    username: '',
+    biography: '',
+    phoneNumber: '',
   });
   const [errorMessage, setErrorMessage] = useState();
 
   const isButtonDisabled =
     signUpData.email === '' ||
+    signUpData.username === '' ||
+    signUpData.biography === '' ||
+    signUpData.phoneNumber === '' ||
     signUpData.password === '' ||
     signUpData.confirmPassword === '' ||
     signUpData.password.length < 8 ||
     signUpData.password !== signUpData.confirmPassword;
 
-  const successCallback = () => { };
+  const successCallback = (response) => {
+    if (response === "Created") {
+      Navigate('/')
+    }
+  };
 
   const errorCallback = error => {
-    setErrorMessage(error);
+    alert(error)
   };
 
   const handleChange = (name, value) => {
@@ -51,12 +62,8 @@ const Registration = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // signUp(signUpData, successCallback, errorCallback);
+    signUp(signUpData, successCallback, errorCallback);
   };
-
-  // const handleClick = () => {
-  //   resendVerification(signUpData, successCallback, errorCallback);
-  // }
 
 
   return (
@@ -83,7 +90,6 @@ const Registration = () => {
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                   <TextField
-                    autoComplete="given-name"
                     name="firstName"
                     required
                     fullWidth
@@ -100,8 +106,17 @@ const Registration = () => {
                     id="lastName"
                     label="Last Name"
                     name="lastName"
-                    autoComplete="family-name"
                     onChange={(event) => handleChange('lastName', event.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} >
+                  <TextField
+                    required
+                    fullWidth
+                    id="username"
+                    label="Username"
+                    name="username"
+                    onChange={(event) => handleChange('username', event.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -111,8 +126,27 @@ const Registration = () => {
                     id="email"
                     label="Email Address"
                     name="email"
-                    autoComplete="email"
                     onChange={(event) => handleChange('email', event.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} >
+                  <TextField
+                    required
+                    fullWidth
+                    id="phoneNumber"
+                    label="Phone number"
+                    name="phoneNumber"
+                    onChange={(event) => handleChange('phoneNumber', event.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} >
+                  <TextField
+                    required
+                    fullWidth
+                    id="biography"
+                    label="Biography"
+                    name="biography"
+                    onChange={(event) => handleChange('biography', event.target.value)}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -123,7 +157,6 @@ const Registration = () => {
                     label="Password"
                     type="password"
                     id="password"
-                    autoComplete="new-password"
                     onChange={(event) => handleChange('password', event.target.value)}
                   />
                 </Grid>
@@ -135,7 +168,6 @@ const Registration = () => {
                     label="Confirm Password"
                     type="password"
                     id="confirmPassword"
-                    autoComplete="confirm-password"
                     onChange={(event) => handleChange('confirmPassword', event.target.value)}
                   />
                 </Grid>
