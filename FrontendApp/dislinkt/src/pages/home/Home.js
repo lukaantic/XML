@@ -28,7 +28,7 @@ const ExpandMore = styled((props) => {
   }),
 }));
 
-export default function RecipeReviewCard() {
+const Home = () => {
 
   return (
     <div>
@@ -39,3 +39,5 @@ export default function RecipeReviewCard() {
     </div>
   );
 }
+
+export default Home;
