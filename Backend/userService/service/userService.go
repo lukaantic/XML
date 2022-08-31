@@ -14,6 +14,7 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"context"
+	//"string"
 )
 
 type RegularUserService struct {
@@ -32,14 +33,16 @@ func (service *RegularUserService) Register(ctx context.Context,regularUserRegis
 	}
 
 	var regularUser = createRegularUserFromRegularUserRegistrationDTO(&regularUserRegistrationDto)
-	_, err := service.RegularUserRepository.Register(ctx, regularUser)
+	userId, err := service.RegularUserRepository.Register(ctx, regularUser)
 	if err != nil {
 		return err
 	}
-	/*err2 := service.registerUserInAuthenticationService(regularUserRegistrationDto, createdUserId)
+
+
+	err2 := service.registerUserInAuthenticationService(regularUserRegistrationDto, userId)
 	if err2 != nil {
 		return err2
-	}*/
+	}
 	fmt.Println("User created")
 	return nil
 }
@@ -65,6 +68,7 @@ func createRegularUserFromRegularUserRegistrationDTO(regularUserDto *dto.Regular
 		PrivacyType:        model.PrivacyType(0),
 		AllMessageRequests: true,
 	}
+
 	var regularUser model.RegularUser
 	regularUser.Name = regularUserDto.Name
 	regularUser.Surname = regularUserDto.Surname
@@ -82,9 +86,10 @@ func createRegularUserFromRegularUserRegistrationDTO(regularUserDto *dto.Regular
 }
 
 func (service *RegularUserService) registerUserInAuthenticationService(regularUserRegistrationDto dto.RegularUserRegistrationDTO, createdUserId string) error {
+
+		fmt.Println("Ovo cu da saljem kao id:", createdUserId)
 	postBody, _ := json.Marshal(map[string]string{
-		"userId":   createdUserId,
-		"email":    regularUserRegistrationDto.Email,
+		"id":   createdUserId,
 		"password": regularUserRegistrationDto.Password,
 		"username": regularUserRegistrationDto.Username,
 		"name":     regularUserRegistrationDto.Name,
@@ -92,7 +97,6 @@ func (service *RegularUserService) registerUserInAuthenticationService(regularUs
 	})
 
 	requestUrl := fmt.Sprintf("http://%s:%s/register", os.Getenv("AUTHENTICATION_SERVICE_DOMAIN"), os.Getenv("AUTHENTICATION_SERVICE_PORT"))
-	//requestUrl := "http://localhost:1231/register"
 	resp, err := http.Post(requestUrl, "application/json", bytes.NewBuffer(postBody))
 	if err != nil {
 		fmt.Println(err)

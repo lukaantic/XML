@@ -69,6 +69,8 @@ services:
 #      - 8081:8081
     depends_on:
       - mongo-db
+      - auth_baza 
+      - trace_db 
 
   mongo-db:
     image: mongo
@@ -135,6 +137,7 @@ services:
       - "16686:16686"
       - "14268:14268"
       - "14250:14250"  
+    
 
   trace_db:
     restart: always
@@ -148,6 +151,8 @@ services:
       - POSTGRES_DB=tracing
     networks:
       - backend
+    depends_on:
+      - mongo-db      
 
 networks:
   backend:
