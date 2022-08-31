@@ -62,7 +62,7 @@ func handleFunc(userHandler *handler.RegularUserHandler) {
 	c := SetupCors()
 
 	http.Handle("/", c.Handler(ruter))
-	err := http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), c.Handler(ruter))
+	err := http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("USER_SERVICE_PORT")), c.Handler(ruter))
 	//err := http.ListenAndServe(":8081", ruter)
 	if err != nil {
 		log.Println(err)
