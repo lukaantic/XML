@@ -15,4 +15,9 @@ type RegularUserUpdateDTO struct {
 	Gender      *model.Gender       `json:"gender"`
 	BirthDate   *primitive.DateTime `json:"birthDate"`
 	Biography   string              `json:"biography"`
+	Skills         string      		`bson:"skills,omitempty"`
+	Education      string         `bson:"education"`
+	Experience     string         `bson:"experience"`
+	Interests      string         `bson:"interests"`
+	
 }

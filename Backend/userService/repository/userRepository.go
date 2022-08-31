@@ -80,7 +80,10 @@ func (repository *RegularUserRepository) UpdatePersonalInformations(user *model.
 			{"$set", bson.D{{"birthDate", user.BirthDate}}},
 			{"$set", bson.D{{"biography", user.Biography}}},
 			{"$set", bson.D{{"likedPosts", user.LikedPosts}}},
-			{"$set", bson.D{{"dislikedPosts", user.DislikedPosts}}},
+			{"$set", bson.D{{"Skills", user.Skills}}},
+			{"$set", bson.D{{"Experience", user.Experience}}},
+			{"$set", bson.D{{"Education", user.Education}}},
+			{"$set", bson.D{{"Interests", user.Interests}}},
 		})
 	if err != nil {
 		log.Fatal(err)

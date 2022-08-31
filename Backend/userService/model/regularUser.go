@@ -9,8 +9,8 @@ type RegularUser struct {
 	Notifications  []Notification `bson:"notifications,omitempty"`
 	Followings     []Following    `bson:"followings,omitempty"`
 	Followers      []Follower     `bson:"followers,omitempty"`
-	Skills         []Skills       `bson:"skills,omitempty"`
-	Education      string         `bson:"education"`
-	Expirience     string         `bson:"expirience"`
-	Interests      string         `bson:"interests"`
+	Skills         string      `bson:"skills,omitempty"`
+	Education      string         `bson:"education,omitempty"`
+	Experience     string         `bson:"experience,omitempty"`
+	Interests      string         `bson:"interests,omitempty"`
 }

@@ -19,6 +19,6 @@ type RegularUserRegistrationDTO struct {
 	WebSite     string              `json:"webSite"`
 	Skills      string              `json:skills`
 	Education   string              `json:"education"`
-	Expirience  string              `json:"expirience"`
+	Experience  string              `json:"experience"`
 	Interests   string              `json:"interests"`
 }

@@ -59,6 +59,10 @@ func createRegularUserFromRegularUserUpdateDTO(userUpdateDto *dto.RegularUserUpd
 	regularUser.Gender = userUpdateDto.Gender
 	regularUser.BirthDate = userUpdateDto.BirthDate
 	regularUser.Biography = userUpdateDto.Biography
+	regularUser.Interests = userUpdateDto.Interests
+	regularUser.Experience = userUpdateDto.Experience
+	regularUser.Education = userUpdateDto.Education
+	regularUser.Skills = userUpdateDto.Skills
 
 	return &regularUser
 }
@@ -81,6 +85,10 @@ func createRegularUserFromRegularUserRegistrationDTO(regularUserDto *dto.Regular
 	regularUser.ProfilePrivacy = profilePrivacy
 	regularUser.UserRole = model.UserRole(0)
 	regularUser.Gender = regularUserDto.Gender
+	regularUser.Skills = regularUserDto.Skills
+	regularUser.Experience = regularUserDto.Experience
+	regularUser.Interests = regularUserDto.Interests
+	regularUser.Education = regularUserDto.Education
 
 	return &regularUser
 }
@@ -222,6 +230,10 @@ func createRegularUserProfileDataDto(regularUser *model.RegularUser) *dto.Regula
 	regularUserProfileDataDto.Username = regularUser.Username
 	regularUserProfileDataDto.Biography = regularUser.Biography
 	regularUserProfileDataDto.ProfilePrivacy = regularUser.ProfilePrivacy
+	regularUserProfileDataDto.Skills = regularUser.Skills
+	regularUserProfileDataDto.Interests = regularUser.Interests
+	regularUserProfileDataDto.Experience = regularUser.Experience
+	regularUserProfileDataDto.Education = regularUser.Education
 
 	return &regularUserProfileDataDto
 }
@@ -232,7 +244,7 @@ func (service *RegularUserService) GetAllPublicRegularUsers() ([]dto.RegularUser
 		fmt.Println("serv greska")
 		return nil, err
 	}
-
+.
 	allRegularUsersModel := CreateUserFromDocuments(allRegularUsers)
 
 	allRegularUsersDto := createRegularUserDtoFromRegularUser(allRegularUsersModel)
@@ -259,6 +271,10 @@ func createRegularUserDtoFromRegularUser(allRegularUsers []model.RegularUser) []
 		regularUserIteration.Username = allRegularUsers[i].Username
 		regularUserIteration.Name = allRegularUsers[i].Name
 		regularUserIteration.Surname = allRegularUsers[i].Surname
+		regularUserIteration.Skills = allRegularUsers[i].Skills
+		regularUserIteration.Interests = allRegularUsers[i].Interests
+		regularUserIteration.Experience = allRegularUsers[i].Experience
+		regularUserIteration.Education = allRegularUsers[i].Education
 		regularUser = append(regularUser, regularUserIteration)
 	}
 	return regularUser

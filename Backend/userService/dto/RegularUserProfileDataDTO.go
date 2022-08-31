@@ -13,4 +13,8 @@ type RegularUserProfileDataDTO struct {
 	Username       string               `json:"username"`
 	Biography      string               `json:"biography"`
 	ProfilePrivacy model.ProfilePrivacy `json:"profilePrivacy"`
+	Skills      string               `json:"skills"`
+	Interests      string               `json:"interests"`
+	Experience      string               `json:"experience"`
+	Education      string               `json:"education"`
 }

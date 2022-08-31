@@ -9,4 +9,8 @@ type RegularUserDTO struct {
 	Name     string             `json:"name"`
 	Surname  string             `json:"surname"`
 	Username string             `json:"username"`
+	Skills      string               `json:"skills"`
+	Interests      string               `json:"interests"`
+	Experience      string               `json:"experience"`
+	Education      string               `json:"education"`
 }
