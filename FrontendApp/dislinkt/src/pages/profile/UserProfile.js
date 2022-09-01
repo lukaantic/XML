@@ -3,26 +3,20 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import Header from '../../../components/navigation/Header';
-import { AuthenticationContext } from '../../../context/AuthenticationContext';
 import { useNavigate } from 'react-router-dom';
+import Header from '../../components/navigation/Header';
 
 
 const theme = createTheme();
 
-const Registration = () => {
+const UserProfile = () => {
   const Navigate = useNavigate();
-
-  localStorage.removeItem('token');
-
-  const { signUp } = useContext(AuthenticationContext);
 
   const [signUpData, setSignUpData] = useState({
     email: '',
@@ -34,29 +28,6 @@ const Registration = () => {
     biography: '',
     phoneNumber: '',
   });
-  const [errorMessage, setErrorMessage] = useState();
-
-  const isButtonDisabled =
-    signUpData.email === '' ||
-    signUpData.surname === '' ||
-    signUpData.name === '' ||
-    signUpData.username === '' ||
-    signUpData.biography === '' ||
-    signUpData.phoneNumber === '' ||
-    signUpData.password === '' ||
-    signUpData.confirmPassword === '' ||
-    signUpData.password.length < 8 ||
-    signUpData.password !== signUpData.confirmPassword;
-
-  const successCallback = (response) => {
-    if (response === "Created") {
-      Navigate('/')
-    }
-  };
-
-  const errorCallback = error => {
-    alert(error)
-  };
 
   const handleChange = (name, value) => {
     setSignUpData({ ...signUpData, [name]: value });
@@ -64,7 +35,6 @@ const Registration = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    signUp(signUpData, successCallback, errorCallback);
   };
 
 
@@ -73,7 +43,6 @@ const Registration = () => {
       <Header />
       <ThemeProvider theme={theme}>
         <Container component="main" maxWidth="xs">
-          <CssBaseline />
           <Box
             sx={{
               marginTop: 8,
@@ -82,11 +51,8 @@ const Registration = () => {
               alignItems: 'center',
             }}
           >
-            <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-              <LockOutlinedIcon />
-            </Avatar>
             <Typography component="h1" variant="h5">
-              Sign up
+              Your Profile
             </Typography>
             <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
               <Grid container spacing={2}>
@@ -175,21 +141,13 @@ const Registration = () => {
                 </Grid>
               </Grid>
               <Button
-                disabled={isButtonDisabled}
                 type="submit"
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
               >
-                Sign Up
+                Update
               </Button>
-              <Grid container justifyContent="flex-end">
-                <Grid item>
-                  <Link href="/" variant="body2">
-                    Already have an account? Sign in
-                  </Link>
-                </Grid>
-              </Grid>
             </Box>
           </Box>
         </Container>
@@ -198,4 +156,4 @@ const Registration = () => {
   );
 }
 
-export default Registration;
+export default UserProfile;

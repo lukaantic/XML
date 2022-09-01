@@ -18,6 +18,8 @@ export default function Header() {
 
   const { token, deleteUserToken } = useContext(AuthenticationContext);
 
+  const username = localStorage.getItem('username')
+
   const handleLogoutClick = () => {
     deleteUserToken();
     Navigate('/');
@@ -28,6 +30,7 @@ export default function Header() {
   }
 
   const handleProfileClick = () => {
+    Navigate('/profile')
   }
 
   const handleHomeClick = () => {

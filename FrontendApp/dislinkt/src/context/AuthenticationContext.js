@@ -17,28 +17,28 @@ const AuthenticationContextProvider = props => {
 
   const saveUserToken = token => {
     setUserToken(token);
-    return localStorage.setItem('@token', token);
+    return localStorage.setItem('token', token.token);
   };
 
   const deleteUserToken = () => {
     axiosInstance.defaults.headers.authorization = '';
     setToken('');
     // deleteUserData();
-    return localStorage.removeItem('@token');
+    return localStorage.removeItem('token');
   };
 
   const getUserToken = () => {
-    localStorage.getItem('@token', (error, userToken) => {
-      if (userToken)
-        return setUserToken(userToken);
+    const userToken = localStorage.getItem('token')
 
-      setUserToken(null)
-    });
+    if (userToken) {
+      return setUserToken(userToken)
+    }
   };
 
   useEffect(() => {
-    if (token === '')
+    if (token === '') {
       getUserToken();
+    }
   }, [token]);
 
   async function login(data, successCallback, errorCallback) {
@@ -47,7 +47,7 @@ const AuthenticationContextProvider = props => {
 
       saveUserToken(response.data);
 
-      successCallback();
+      successCallback(localStorage.setItem('username', data.username));
     } catch (error) {
       errorCallback(error?.message);
     }

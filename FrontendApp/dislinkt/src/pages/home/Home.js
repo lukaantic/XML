@@ -1,40 +1,32 @@
-import * as React from 'react';
-import { styled } from '@mui/material/styles';
-import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
-import CardMedia from '@mui/material/CardMedia';
-import CardContent from '@mui/material/CardContent';
-import CardActions from '@mui/material/CardActions';
-import Collapse from '@mui/material/Collapse';
-import Avatar from '@mui/material/Avatar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import { red } from '@mui/material/colors';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import ShareIcon from '@mui/icons-material/Share';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import React, { useState, useContext, useEffect, useMemo } from 'react';
 import UserPost from '../../components/post/UsersPost';
 import Header from '../../components/navigation/Header';
+import { UserContext } from '../../context';
+import UserAccountForDisplay from '../../components/users/UserAccountForDisplay';
+import NewPostModal from '../../components/post/NewPostModal';
 
-const ExpandMore = styled((props) => {
-  const { expand, ...other } = props;
-  return <IconButton {...other} />;
-})(({ theme, expand }) => ({
-  transform: !expand ? 'rotate(0deg)' : 'rotate(180deg)',
-  marginLeft: 'auto',
-  transition: theme.transitions.create('transform', {
-    duration: theme.transitions.duration.shortest,
-  }),
-}));
 
 const Home = () => {
+  const { getAllPublicUsers, publicProfiles } = useContext(UserContext);
+
+  useEffect(() => {
+    if (publicProfiles == 0) {
+      getAllPublicUsers();
+    }
+  }, [publicProfiles])
 
   return (
     <div>
       <Header />
       <div style={{ display: "flex", flex: 1, flexDirection: "column", alignItems: "center", width: "100%", margin: 50 }}>
-        <UserPost />
+        <NewPostModal />
+        {publicProfiles.length > 0 &&
+          publicProfiles.map((publicProfile, index) => {
+            return (
+              <UserAccountForDisplay key={index} username={publicProfile?.username} name={publicProfile?.name} surname={publicProfile?.surname} email={publicProfile?.email} />
+            )
+          })
+        }
       </div>
     </div>
   );
