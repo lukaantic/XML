@@ -328,3 +328,14 @@ func (service *RegularUserService) FindUserById(userId primitive.ObjectID) (*mod
 	}
 	return regularUser, err
 }
+
+func (service *RegularUserService) GetUserSearchResults(searchInput string) ([]model.RegularUser, error){
+	searchUser,err := service.RegularUserRepository.GetAllRegularUsers()
+	if err != nil {
+		return nil, err
+	}
+	searchrUserModel := CreateUserFromDocuments(searchUser)
+	searchUserResults := service.RegularUserRepository.GetUserSearchResults(searchInput, searchrUserModel)
+
+	return searchUserResults, nil
+}

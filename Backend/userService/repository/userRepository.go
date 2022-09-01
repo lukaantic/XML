@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"strings"
 )
 
 type RegularUserRepository struct {
@@ -165,4 +166,29 @@ func (repository *RegularUserRepository) GetAllPublicRegularUsers() ([]bson.D, e
 		log.Fatal(err)
 	}
 	return postsFiltered, nil
+}
+
+func (repository *RegularUserRepository) GetAllRegularUsers() ([]bson.D, error){
+
+	usersCollection := repository.Database.Collection("regularUsers")
+	filterCursor, err := usersCollection.Find(context.TODO(), bson.M{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var postsFiltered []bson.D
+	if err = filterCursor.All(context.TODO(), &postsFiltered); err != nil {
+		log.Fatal(err)
+	}
+	return postsFiltered, nil
+}
+
+func (repository *RegularUserRepository) GetUserSearchResults(searchInput string, allPublicRegularUsers []model.RegularUser) []model.RegularUser{
+	var searchResults []model.RegularUser
+	for i := 0; i<len(allPublicRegularUsers); i++{
+		if(strings.Contains(strings.ToLower(allPublicRegularUsers[i].Username), strings.ToLower(searchInput))){
+			searchResults = append(searchResults, allPublicRegularUsers[i])
+		}
+	}
+	return searchResults
 }

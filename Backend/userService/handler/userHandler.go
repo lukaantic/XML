@@ -185,3 +185,17 @@ func (handler *RegularUserHandler) FindUserById(w http.ResponseWriter, r *http.R
 	}
 	json.NewEncoder(w).Encode(regularUser)
 }
+
+func (handler *RegularUserHandler) GetUserSearchResults(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	param := mux.Vars(r)
+	searchInput := param["searchInput"]
+	searchUsers, err := handler.RegularUserService.GetUserSearchResults(searchInput)
+	searchPostsJson, err := json.Marshal(searchUsers)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	} else {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(searchPostsJson)
+	}
+}
