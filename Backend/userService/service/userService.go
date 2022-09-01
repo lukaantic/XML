@@ -319,3 +319,12 @@ func createUserFollowDTOsFromRegularUsers(regularUsers []model.RegularUser) *[]d
 
 	return &userFollowDTOs
 }
+
+func (service *RegularUserService) FindUserById(userId primitive.ObjectID) (*model.RegularUser, error){
+	fmt.Print("Searching for logged user...")
+	regularUser, err := service.RegularUserRepository.FindUserById(userId)
+	if err != nil {
+		return nil, err
+	}
+	return regularUser, err
+}
