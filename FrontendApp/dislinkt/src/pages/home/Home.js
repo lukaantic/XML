@@ -23,7 +23,7 @@ const Home = () => {
         {publicProfiles.length > 0 &&
           publicProfiles.map((publicProfile, index) => {
             return (
-              <UserAccountForDisplay key={index} username={publicProfile?.username} name={publicProfile?.name} surname={publicProfile?.surname} email={publicProfile?.email} />
+              <UserAccountForDisplay key={index} username={publicProfile?.username} name={publicProfile?.name} surname={publicProfile?.surname} email={publicProfile?.email} id={publicProfile?._id} />
             )
           })
         }

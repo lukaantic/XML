@@ -1,4 +1,4 @@
-import * as React from 'react';
+import  React, {useEffect, useState} from 'react';
 import { styled } from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
@@ -7,19 +7,52 @@ import CardContent from '@mui/material/CardContent';
 import CardActions from '@mui/material/CardActions';
 import Avatar from '@mui/material/Avatar';
 import { red } from '@mui/material/colors';
-import { Link, Typography } from '@mui/material';
+import { IconButton, Link, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import AccessibilityIcon from '@mui/icons-material/Accessibility';
+import { axiosInstance } from '../../axios/axios';
 
 const UserAccountForDisplay = ({ title, urls, image, username, name, surname, id }) => {
-  const Navigate = useNavigate();
-
   const goToProfile = () => {
-    Navigate(`/account${username}`)
+    window.location.href=`/account${username}`
   }
 
+  const usersUsername = localStorage.getItem('username')
+
+  const [userData, setUSetData] = useState();
+  
+  const getUser = async () => {
+    try {
+      const response = await axiosInstance.get(`/user/find-user/${usersUsername}`);
+      setUSetData(response?.data);
+    } catch (error) {
+      alert("Error: " + error.message);
+    }
+  }
+
+  useEffect(() => {
+    getUser();
+  }, []) 
+
+  const handleFollowCLick = async () => {
+    try {
+      const payload = {
+        followerId: id,
+        followedId: userData?._id,
+        isPrivate: false
+      }
+
+      const response = await axiosInstance.post("/follow/follow", payload);
+
+    } catch (error) {
+      alert("Error: " + error.message);
+    }
+  }
+
+
   return (
-    <div onClick={goToProfile}>
       <Card sx={{ maxWidth: 345 }} style={{ backgroundColor: "#99CCEE", width: 400, marginBottom: 30 }}>
+        <div onClick={goToProfile}>
         <CardHeader
           avatar={
             <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe" />
@@ -40,10 +73,13 @@ const UserAccountForDisplay = ({ title, urls, image, username, name, surname, id
 
           }
         </CardContent>
+        </div>
         <CardActions disableSpacing>
+          <IconButton aria-label="dislike" onClick={handleFollowCLick} >
+            Follow <AccessibilityIcon />
+          </IconButton>
         </CardActions>
       </Card>
-    </div>
   );
 }
 

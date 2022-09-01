@@ -49,6 +49,7 @@ const Registration = () => {
     signUpData.password !== signUpData.confirmPassword;
 
   const successCallback = (response) => {
+
     if (response === "Created") {
       Navigate('/')
     }

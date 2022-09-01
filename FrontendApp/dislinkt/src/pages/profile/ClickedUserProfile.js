@@ -16,7 +16,6 @@ const ClickedUserProfile = () => {
       getUsersPosts(id);
 
     }
-    console.log('usersPosts', usersPosts)
   }, [usersPosts])
 
 
@@ -27,7 +26,7 @@ const ClickedUserProfile = () => {
         {usersPosts?.length > 0 &&
           usersPosts?.map((publicProfile, index) => {
             return (
-              <UserPost key={index} comment={publicProfile?.Comment} username={publicProfile?.RegularUser.Username} description={publicProfile?.Description} dislikes={publicProfile?.Dislikes} likes={publicProfile?.Likes} link={publicProfile.link} />
+              <UserPost key={index} comment={publicProfile?.Comment} username={publicProfile?.RegularUser.Username} description={publicProfile?.Description} dislikes={publicProfile?.Dislikes} likes={publicProfile?.Likes} link={publicProfile.link} id = {publicProfile?.Id} />
             )
           })
         }

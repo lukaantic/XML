@@ -16,6 +16,7 @@ import ShareIcon from '@mui/icons-material/Share';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Link } from 'react-router-dom';
+import { axiosInstance } from '../../axios/axios';
 // import { Link } from '@mui/material';
 
 const ExpandMore = styled((props) => {
@@ -29,12 +30,45 @@ const ExpandMore = styled((props) => {
   }),
 }));
 
-const UserPost = ({ image, username, description, dislikes, likes, comment, link }) => {
+const UserPost = ({ image, username, description, dislikes, likes, comment, link, id }) => {
   const [expanded, setExpanded] = React.useState(false);
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
   };
+
+  const handleLikeClick = async () => {
+    try {
+
+      const payload = {
+        postId: id,
+        username: username
+      }
+
+      const response = await axiosInstance.put("/post/like-post", payload);
+
+      window.location.reload();
+
+    } catch (error) {
+      alert("Error: " + error.message);
+    }
+  }
+
+  const handleDislikeClick = async () => {
+    try {
+      const payload = {
+        postId: id,
+        username: username
+      }
+
+      const response = await axiosInstance.put("/post/dislike-post", payload);
+
+      window.location.reload();
+
+    } catch (error) {
+      alert("Error: " + error.message);
+    }
+  }
 
   return (
     <Card sx={{ maxWidth: 345 }} style={{ backgroundColor: "#99CCEE", width: 400, marginBottom: 30 }}>
@@ -45,11 +79,11 @@ const UserPost = ({ image, username, description, dislikes, likes, comment, link
         title={username}
         subheader={description}
       />
-      <CardMedia
+      {/* <CardMedia
         component="img"
         height="194"
         image={image}
-      />
+      /> */}
       <CardContent>
         {
           <div>
@@ -64,11 +98,11 @@ const UserPost = ({ image, username, description, dislikes, likes, comment, link
       </CardContent>
       <CardActions disableSpacing>
         <div style={{ display: 'flex', flexDirection: 'row' }}>
-          <IconButton aria-label="add to favorites">
+          <IconButton aria-label="add to favorites" onClick={handleLikeClick}>
             <FavoriteIcon />
           </IconButton>
           <Typography style={{ fontSize: 14, marginTop: 15 }} paragraph>likes {likes}</Typography>
-          <IconButton aria-label="add to favorites">
+          <IconButton aria-label="dislike" onClick={handleDislikeClick} >
             <ThumbDownAltIcon />
           </IconButton>
           <Typography style={{ fontSize: 14, marginTop: 15 }} paragraph>dislikes {dislikes}</Typography>

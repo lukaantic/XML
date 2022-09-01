@@ -56,11 +56,9 @@ const AuthenticationContextProvider = props => {
     try {
       const response = await authenticationService.signUp(data);
 
-      saveUserToken(response.data.token);
-
       successCallback(response?.statusText);
     } catch (error) {
-      errorCallback("Error while signing up, probably account already exists");
+      errorCallback("Error while signing up, probably account already exists" + error.message);
     }
   }
 

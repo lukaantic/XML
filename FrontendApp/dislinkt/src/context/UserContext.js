@@ -26,8 +26,6 @@ const UserContextProvider = props => {
     try {
       const response = await userService.getUsersPosts(username);
 
-      console.log('(response?.data', (response?.data))
-
       setUsersPosts(response?.data);
 
       return response?.data;
