@@ -14,6 +14,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/opentracing/opentracing-go"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type RegularUserHandler struct {
@@ -170,4 +171,31 @@ func (handler *RegularUserHandler) FindUsersByIds(w http.ResponseWriter, r *http
 		return
 	}
 	json.NewEncoder(w).Encode(userFollowDtos)
+}
+
+func (handler *RegularUserHandler) FindUserById(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("content-type", "application/json")
+	params := mux.Vars(r)
+	id, _ := primitive.ObjectIDFromHex(params["id"])
+	regularUser, err := handler.RegularUserService.FindUserById(id)
+
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	json.NewEncoder(w).Encode(regularUser)
+}
+
+func (handler *RegularUserHandler) GetUserSearchResults(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	param := mux.Vars(r)
+	searchInput := param["searchInput"]
+	searchUsers, err := handler.RegularUserService.GetUserSearchResults(searchInput)
+	searchPostsJson, err := json.Marshal(searchUsers)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	} else {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(searchPostsJson)
+	}
 }

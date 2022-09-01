@@ -319,3 +319,23 @@ func createUserFollowDTOsFromRegularUsers(regularUsers []model.RegularUser) *[]d
 
 	return &userFollowDTOs
 }
+
+func (service *RegularUserService) FindUserById(userId primitive.ObjectID) (*model.RegularUser, error){
+	fmt.Print("Searching for logged user...")
+	regularUser, err := service.RegularUserRepository.FindUserById(userId)
+	if err != nil {
+		return nil, err
+	}
+	return regularUser, err
+}
+
+func (service *RegularUserService) GetUserSearchResults(searchInput string) ([]model.RegularUser, error){
+	searchUser,err := service.RegularUserRepository.GetAllRegularUsers()
+	if err != nil {
+		return nil, err
+	}
+	searchrUserModel := CreateUserFromDocuments(searchUser)
+	searchUserResults := service.RegularUserRepository.GetUserSearchResults(searchInput, searchrUserModel)
+
+	return searchUserResults, nil
+}

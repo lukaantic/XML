@@ -59,6 +59,8 @@ func handleFunc(userHandler *handler.RegularUserHandler) {
 	ruter.HandleFunc("/find-user/{username}", userHandler.FindRegularUserByUsername).Methods("GET")
 	ruter.HandleFunc("/public-regular-users", userHandler.GetAllPublicRegularUsers).Methods("GET")
 	ruter.HandleFunc("/by-username/{username}", userHandler.CreateRegularUserPostDTOByUsername).Methods("GET")
+	ruter.HandleFunc("/search-users/{searchInput}", userHandler.GetUserSearchResults).Methods("GET")
+	ruter.HandleFunc("/by-users-ids", userHandler.FindUsersByIds).Methods("POST")
 
 	c := SetupCors()
 
