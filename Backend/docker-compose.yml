@@ -70,7 +70,7 @@ services:
     depends_on:
       - mongo-db
       - auth_baza 
-#      - trace_db 
+      - trace_db 
 
   mongo-db:
     image: mongo
@@ -137,6 +137,25 @@ services:
       - "16686:16686"
       - "14268:14268"
       - "14250:14250"  
+
+  follow-service:
+    image: follow-service:compose_build
+    restart: on-failure
+    build:
+      context: ./followService
+      dockerfile: Dockerfile
+    depends_on:
+      - neo4j
+    networks:
+      - backend
+    environment:
+      PORT: ${FOLLOW_SERVICE_PORT}
+      USER_SERVICE_DOMAIN: ${USER_SERVICE_DOMAIN}
+      USER_SERVICE_PORT: ${USER_SERVICE_PORT}
+      POST_SERVICE_DOMAIN: ${POST_SERVICE_DOMAIN}
+      POST_SERVICE_PORT: ${POST_SERVICE_PORT}
+      JOB_SERVICE_DOMAIN: ${JOB_SERVICE_DOMAIN}
+      JOB_SERVICE_PORT: ${JOB_SERVICE_PORT}
     
 
   trace_db:
