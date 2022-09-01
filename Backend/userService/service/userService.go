@@ -24,9 +24,9 @@ type RegularUserService struct {
 
 func (service *RegularUserService) Register(ctx context.Context, regularUserRegistrationDto dto.RegularUserRegistrationDTO) error {
 
-	span := tracer.StartSpanFromContext(ctx, "Register")
+	span := tracer.StartSpanFromContext(ctx, "Server Register")
 	defer span.Finish()
-	ctx = tracer.ContextWithSpan(context.Background(), span)
+	ctx = tracer.ContextWithSpan(ctx, span)
 
 	if service.RegularUserRepository.ExistByUsername(ctx, regularUserRegistrationDto.Username) {
 		return fmt.Errorf("username is already taken")

@@ -19,9 +19,9 @@ type RegularUserRepository struct {
 
 func (repository *RegularUserRepository) Register(ctx context.Context, user *model.RegularUser) (string, error) {
 
-	span := tracer.StartSpanFromContext(ctx, "Register")
+	span := tracer.StartSpanFromContext(ctx, "Repository Register")
 	defer span.Finish()
-	ctx = tracer.ContextWithSpan(context.Background(), span)
+	ctx = tracer.ContextWithSpan(ctx, span)
 
 	regularUserCollection := repository.Database.Collection("regularUsers")
 	res, err := regularUserCollection.InsertOne(context.TODO(), &user)
@@ -33,9 +33,9 @@ func (repository *RegularUserRepository) Register(ctx context.Context, user *mod
 
 func (repository *RegularUserRepository) ExistByUsername(ctx context.Context, username string) bool {
 
-	span := tracer.StartSpanFromContext(ctx, "Register")
+	span := tracer.StartSpanFromContext(ctx, "Checking User Exist")
 	defer span.Finish()
-	ctx = tracer.ContextWithSpan(context.Background(), span)
+	ctx = tracer.ContextWithSpan(ctx, span)
 
 	regularUserCollection := repository.Database.Collection("regularUsers")
 	filterCursor, err := regularUserCollection.Find(context.TODO(), bson.M{"username": username})
